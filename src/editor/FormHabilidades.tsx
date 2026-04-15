@@ -1,0 +1,50 @@
+"use client"
+
+import { useState } from "react"
+import { LightningIcon } from "@phosphor-icons/react"
+import { Input } from "@/components/atoms/Input"
+import { Chip } from "@/components/atoms/Chip"
+import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
+import { useCurriculumStore } from "@/lib/store"
+
+export function FormHabilidades() {
+  const habilidades = useCurriculumStore((s) => s.datos.habilidades)
+  const agregar = useCurriculumStore((s) => s.agregarHabilidad)
+  const eliminar = useCurriculumStore((s) => s.eliminarHabilidad)
+  const [valor, setValor] = useState("")
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      const trimmed = valor.trim()
+      if (trimmed) {
+        agregar(trimmed)
+        setValor("")
+      }
+    }
+  }
+
+  return (
+    <SeccionFormulario
+      titulo="Competencias Clave"
+      icono={<LightningIcon size={18} />}
+    >
+      <Input
+        label="Agregar habilidad"
+        placeholder="Escribe y presiona Enter"
+        value={valor}
+        onChange={(e) => setValor(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+      {habilidades.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {habilidades.map((h) => (
+            <Chip key={h} onRemove={() => eliminar(h)}>
+              {h}
+            </Chip>
+          ))}
+        </div>
+      )}
+    </SeccionFormulario>
+  )
+}

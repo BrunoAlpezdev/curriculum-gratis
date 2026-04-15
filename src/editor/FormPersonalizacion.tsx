@@ -1,0 +1,63 @@
+"use client"
+
+import { PaletteIcon } from "@phosphor-icons/react"
+import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
+import { useCurriculumStore } from "@/lib/store"
+import { COLORES_TEMA, PLANTILLAS } from "@/lib/constantes"
+import { cn } from "@/components/ui/cn"
+import type { ColorTema, PlantillaId } from "@/types"
+
+export function FormPersonalizacion() {
+  const personalizacion = useCurriculumStore((s) => s.personalizacion)
+  const set = useCurriculumStore((s) => s.setPersonalizacion)
+
+  return (
+    <SeccionFormulario
+      titulo="Personalizar"
+      icono={<PaletteIcon size={18} />}
+    >
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-700">Plantilla</label>
+        <div className="grid grid-cols-2 gap-2">
+          {PLANTILLAS.map((p) => (
+            <button
+              key={p.valor}
+              type="button"
+              onClick={() => set({ plantilla: p.valor as PlantillaId })}
+              className={cn(
+                "rounded-lg border p-3 text-left transition-all cursor-pointer",
+                personalizacion.plantilla === p.valor
+                  ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+                  : "border-zinc-200 hover:border-zinc-300",
+              )}
+            >
+              <p className="text-sm font-medium text-zinc-800">{p.etiqueta}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{p.descripcion}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-700">Color</label>
+        <div className="flex gap-2 flex-wrap">
+          {COLORES_TEMA.map((c) => (
+            <button
+              key={c.valor}
+              type="button"
+              onClick={() => set({ color: c.valor as ColorTema })}
+              title={c.etiqueta}
+              className={cn(
+                "h-8 w-8 rounded-full transition-all cursor-pointer",
+                c.clase,
+                personalizacion.color === c.valor
+                  ? "ring-2 ring-offset-2 ring-zinc-400 scale-110"
+                  : "hover:scale-105",
+              )}
+            />
+          ))}
+        </div>
+      </div>
+    </SeccionFormulario>
+  )
+}
