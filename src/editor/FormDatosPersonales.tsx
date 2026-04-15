@@ -13,7 +13,7 @@ export function FormDatosPersonales() {
     <SeccionFormulario titulo="Datos Personales" icono={<UserIcon size={18} />}>
       <Input
         label="Nombre completo"
-        placeholder="Maria Gonzalez"
+        placeholder="Camila Gavilán"
         value={datos.nombreCompleto}
         onChange={(e) => set({ nombreCompleto: e.target.value })}
       />
