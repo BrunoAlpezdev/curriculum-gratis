@@ -1,16 +1,32 @@
 import html2canvas from "html2canvas-pro"
 import { jsPDF } from "jspdf"
+import type { DatosCurriculum, Personalizacion } from "@/types"
+import { PLANTILLAS } from "@/lib/constantes"
 
 const A4_WIDTH_MM = 210
 const A4_HEIGHT_MM = 297
-// Tolerancia de 2mm para redondeo de pixeles
 const A4_TOLERANCIA_MM = 2
 
 /**
- * Captura el CV del preview exactamente como se ve y lo descarga como PDF.
- * El elemento #curriculum-pdf tiene ancho fijo de 794px (A4 a 96dpi).
+ * Genera PDF con el metodo apropiado segun la plantilla:
+ * - ATS (clasico, minimalista): texto nativo con jsPDF
+ * - Visual (moderno, colorido): captura con html2canvas
  */
-export async function generarPdf(nombreCompleto: string) {
+export async function generarPdf(
+  datos: DatosCurriculum,
+  personalizacion: Personalizacion,
+) {
+  const plantilla = PLANTILLAS.find((p) => p.valor === personalizacion.plantilla)
+
+  if (plantilla?.ats) {
+    const { generarPdfAts } = await import("@/lib/generar-pdf-ats")
+    generarPdfAts(datos, personalizacion)
+  } else {
+    await generarPdfVisual(datos.datosPersonales.nombreCompleto)
+  }
+}
+
+async function generarPdfVisual(nombreCompleto: string) {
   const el = document.getElementById("curriculum-pdf")
   if (!el) return
 
@@ -27,10 +43,8 @@ export async function generarPdf(nombreCompleto: string) {
   const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width
 
   if (imgHeight <= A4_HEIGHT_MM + A4_TOLERANCIA_MM) {
-    // Cabe en una pagina — escalar para llenar el A4 exacto
     pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, A4_HEIGHT_MM)
   } else {
-    // Multiples paginas
     let posY = 0
     while (posY < imgHeight) {
       if (posY > 0) pdf.addPage()

@@ -31,7 +31,14 @@ export function FormPersonalizacion() {
                   : "border-zinc-200 hover:border-zinc-300",
               )}
             >
-              <p className="text-sm font-medium text-zinc-800">{p.etiqueta}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium text-zinc-800">{p.etiqueta}</p>
+                {p.ats && (
+                  <span className="rounded bg-emerald-100 text-emerald-700 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                    ATS
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-zinc-500 mt-0.5">{p.descripcion}</p>
             </button>
           ))}

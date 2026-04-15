@@ -7,14 +7,15 @@ import { useCurriculumStore } from "@/lib/store"
 
 export function BarraAcciones() {
   const [descargando, setDescargando] = useState(false)
-  const nombreCompleto = useCurriculumStore((s) => s.datos.datosPersonales.nombreCompleto)
+  const datos = useCurriculumStore((s) => s.datos)
+  const personalizacion = useCurriculumStore((s) => s.personalizacion)
   const reiniciar = useCurriculumStore((s) => s.reiniciar)
 
   async function descargar() {
     setDescargando(true)
     try {
       const { generarPdf } = await import("@/lib/generar-pdf")
-      await generarPdf(nombreCompleto)
+      await generarPdf(datos, personalizacion)
     } finally {
       setDescargando(false)
     }

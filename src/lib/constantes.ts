@@ -28,11 +28,11 @@ export const COLORES_TEMA: {
   { valor: "gris", etiqueta: "Gris", clase: "bg-gray-700", hex: "#374151" },
 ]
 
-export const PLANTILLAS: { valor: PlantillaId; etiqueta: string; descripcion: string }[] = [
-  { valor: "clasico", etiqueta: "Clasico", descripcion: "Estilo Harvard, limpio y profesional" },
-  { valor: "moderno", etiqueta: "Moderno", descripcion: "Sidebar con iconos y color" },
-  { valor: "colorido", etiqueta: "Colorido", descripcion: "Header grande con formas decorativas" },
-  { valor: "minimalista", etiqueta: "Minimalista", descripcion: "Plano y elegante, sin adornos" },
+export const PLANTILLAS: { valor: PlantillaId; etiqueta: string; descripcion: string; ats: boolean }[] = [
+  { valor: "clasico", etiqueta: "Clasico (ATS)", descripcion: "Estilo Harvard — legible por sistemas ATS", ats: true },
+  { valor: "moderno", etiqueta: "Moderno", descripcion: "Sidebar con iconos y color", ats: false },
+  { valor: "colorido", etiqueta: "Colorido", descripcion: "Header grande con formas decorativas", ats: false },
+  { valor: "minimalista", etiqueta: "Minimalista (ATS)", descripcion: "Plano y elegante — legible por sistemas ATS", ats: true },
 ]
 
 export const PERSONALIZACION_INICIAL: Personalizacion = {
