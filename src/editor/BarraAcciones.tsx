@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { DownloadSimpleIcon, ArrowCounterClockwiseIcon, SpinnerIcon, SunIcon, MoonIcon, MonitorIcon } from "@phosphor-icons/react"
 import { Button } from "@/components/atoms/Button"
 import { useCurriculumStore } from "@/lib/store"
 import { useTema, type Tema } from "@/lib/useTema"
+import type { DatosCurriculum } from "@/types"
 
 const CICLO_TEMA: Record<Tema, Tema> = {
   sistema: "claro",
@@ -24,11 +25,86 @@ const ETIQUETA_TEMA: Record<Tema, string> = {
   sistema: "Sistema",
 }
 
+const DATOS_MOCK: DatosCurriculum = {
+  datosPersonales: {
+    nombreCompleto: "Camila Rojas Fernandez",
+    titulo: "Ingeniera de Software Senior",
+    email: "camila.rojas@email.com",
+    telefono: "+56 9 8765 4321",
+    ubicacion: "Santiago, Chile",
+  },
+  perfil:
+    "Ingeniera de software con 6 años de experiencia desarrollando aplicaciones web escalables. Especializada en React, Node.js y arquitectura de microservicios. Apasionada por las buenas practicas de desarrollo y la mejora continua de procesos.",
+  experiencia: [
+    {
+      id: crypto.randomUUID(),
+      empresa: "TechCorp Chile",
+      cargo: "Ingeniera de Software Senior",
+      ubicacion: "Santiago, Chile",
+      fechaInicio: "2021-03",
+      fechaFin: null,
+      descripcion:
+        "Lider tecnica de un equipo de 5 desarrolladores. Diseño e implementacion de microservicios con Node.js y TypeScript. Migracion de monolito a arquitectura distribuida.",
+      logros:
+        "Reduccion del tiempo de deploy en un 60%. Mejora del rendimiento de la API principal en un 40%.",
+    },
+    {
+      id: crypto.randomUUID(),
+      empresa: "StartupLab",
+      cargo: "Desarrolladora Full Stack",
+      ubicacion: "Valparaiso, Chile",
+      fechaInicio: "2018-06",
+      fechaFin: "2021-02",
+      descripcion:
+        "Desarrollo de plataforma SaaS de gestion de inventario. Implementacion de frontend con React y backend con Express. Integracion con APIs de pago y logistica.",
+      logros: "Crecimiento de 0 a 15.000 usuarios activos en 18 meses.",
+    },
+  ],
+  educacion: [
+    {
+      id: crypto.randomUUID(),
+      institucion: "Universidad de Chile",
+      titulo: "Ingenieria Civil en Computacion",
+      fechaInicio: "2013-03",
+      fechaFin: "2018-01",
+      descripcion: "Mencion en Ingenieria de Software. Mejor promedio de generacion.",
+    },
+  ],
+  habilidades: [
+    "TypeScript",
+    "React",
+    "Node.js",
+    "PostgreSQL",
+    "Docker",
+    "AWS",
+    "Git",
+    "Scrum",
+  ],
+  idiomas: [
+    { id: crypto.randomUUID(), nombre: "Español", nivel: "nativo" },
+    { id: crypto.randomUUID(), nombre: "Ingles", nivel: "avanzado" },
+  ],
+}
+
+const TAPS_REQUERIDOS = 5
+const VENTANA_MS = 2000
+
 export function BarraAcciones() {
   const [descargando, setDescargando] = useState(false)
   const datos = useCurriculumStore((s) => s.datos)
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
   const reiniciarStore = useCurriculumStore((s) => s.reiniciar)
+  const tapsRef = useRef<number[]>([])
+
+  function handleTapTitulo() {
+    const ahora = Date.now()
+    tapsRef.current = tapsRef.current.filter((t) => ahora - t < VENTANA_MS)
+    tapsRef.current.push(ahora)
+    if (tapsRef.current.length >= TAPS_REQUERIDOS) {
+      tapsRef.current = []
+      useCurriculumStore.setState({ datos: DATOS_MOCK })
+    }
+  }
 
   function reiniciar() {
     if (window.confirm("¿Seguro que quieres reiniciar? Se borrarán todos los datos del curriculum.")) {
@@ -50,7 +126,10 @@ export function BarraAcciones() {
   return (
     <div data-no-print className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 md:px-4 py-2">
       <div className="flex items-center gap-1.5 min-w-0">
-        <h1 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">
+        <h1
+          className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate cursor-default select-none"
+          onClick={handleTapTitulo}
+        >
           <span className="md:hidden">CV Gratis</span>
           <span className="hidden md:inline">Generador de Curriculum</span>
         </h1>

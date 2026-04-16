@@ -27,7 +27,7 @@ export function FormDatosPersonales() {
         <Input
           label="Email"
           type="email"
-          placeholder="maria@email.com"
+          placeholder="camila@email.com"
           value={datos.email}
           onChange={(e) => set({ email: e.target.value })}
         />
