@@ -42,13 +42,16 @@ export function BarraAcciones() {
   }
 
   return (
-    <div data-no-print className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5">
-      <div className="flex items-center gap-2">
-        <h1 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">Curriculum Gratis</h1>
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">·</span>
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">100% gratuito</span>
+    <div data-no-print className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 md:px-4 py-2">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <h1 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">
+          <span className="md:hidden">CV Gratis</span>
+          <span className="hidden md:inline">Generador de Curriculum</span>
+        </h1>
+        <span className="hidden md:inline text-xs text-zinc-400 dark:text-zinc-500">·</span>
+        <span className="hidden md:inline text-xs text-zinc-400 dark:text-zinc-500 shrink-0">100% gratuito</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 md:gap-2 shrink-0">
         <Button
           variant="ghost"
           size="icon"
@@ -57,11 +60,14 @@ export function BarraAcciones() {
         >
           {ICONO_TEMA[tema]}
         </Button>
-        <Button variant="ghost" size="sm" onClick={reiniciar}>
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={reiniciar} title="Reiniciar">
+          <ArrowCounterClockwiseIcon size={16} />
+        </Button>
+        <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={reiniciar}>
           <ArrowCounterClockwiseIcon size={16} />
           Reiniciar
         </Button>
-        <Button size="sm" onClick={descargar} disabled={descargando}>
+        <Button size="sm" className="whitespace-nowrap" onClick={descargar} disabled={descargando}>
           {descargando ? (
             <SpinnerIcon size={16} className="animate-spin" />
           ) : (

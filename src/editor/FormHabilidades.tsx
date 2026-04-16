@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { LightningIcon } from "@phosphor-icons/react"
+import { LightningIcon, PlusIcon } from "@phosphor-icons/react"
 import { Input } from "@/components/atoms/Input"
+import { Button } from "@/components/atoms/Button"
 import { Chip } from "@/components/atoms/Chip"
 import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
 import { useCurriculumStore } from "@/lib/store"
@@ -13,14 +14,18 @@ export function FormHabilidades() {
   const eliminar = useCurriculumStore((s) => s.eliminarHabilidad)
   const [valor, setValor] = useState("")
 
+  function agregarHabilidad() {
+    const trimmed = valor.trim()
+    if (trimmed) {
+      agregar(trimmed)
+      setValor("")
+    }
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault()
-      const trimmed = valor.trim()
-      if (trimmed) {
-        agregar(trimmed)
-        setValor("")
-      }
+      agregarHabilidad()
     }
   }
 
@@ -29,13 +34,26 @@ export function FormHabilidades() {
       titulo="Competencias Clave"
       icono={<LightningIcon size={18} />}
     >
-      <Input
-        label="Agregar habilidad"
-        placeholder="Escribe y presiona Enter"
-        value={valor}
-        onChange={(e) => setValor(e.target.value)}
-        onKeyDown={handleKeyDown}
-      />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <Input
+            label="Agregar habilidad"
+            placeholder="Escribe y presiona Enter"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={agregarHabilidad}
+          className="mt-[26px] shrink-0"
+          aria-label="Agregar habilidad"
+        >
+          <PlusIcon size={18} />
+        </Button>
+      </div>
       {habilidades.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {habilidades.map((h) => (
