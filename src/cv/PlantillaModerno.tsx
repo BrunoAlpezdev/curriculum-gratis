@@ -21,7 +21,7 @@ export function PlantillaModerno({ datos, personalizacion }: Props) {
   const { datosPersonales: dp } = datos
 
   return (
-    <div className="flex flex-1 text-[12px] leading-snug font-sans">
+    <div className="flex flex-1 text-[12px] leading-snug">
       {/* Sidebar */}
       <div
         className="w-[33%] px-5 py-6 text-white flex flex-col gap-5"

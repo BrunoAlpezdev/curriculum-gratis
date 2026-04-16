@@ -12,7 +12,7 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
   const { datosPersonales: dp } = datos
 
   return (
-    <div className="px-10 py-8 flex-1 text-[12px] leading-snug font-serif">
+    <div className="px-10 py-8 flex-1 text-[12px] leading-snug">
       {/* Header centrado estilo Harvard */}
       <div className="text-center mb-4 pb-3 border-b-2" style={{ borderColor: color }}>
         <h1 className="text-[22px] font-bold text-zinc-900">

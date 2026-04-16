@@ -12,7 +12,7 @@ export function PlantillaMinimalista({ datos, personalizacion }: Props) {
   const { datosPersonales: dp } = datos
 
   return (
-    <div className="px-10 py-8 flex-1 text-[12px] leading-snug font-sans">
+    <div className="px-10 py-8 flex-1 text-[12px] leading-snug">
       {/* Header minimalista */}
       <div className="mb-5">
         <h1 className="text-[28px] font-light text-zinc-900 tracking-tight">

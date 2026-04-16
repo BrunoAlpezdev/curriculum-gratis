@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useEffect, useState } from "react"
-import { CurriculumVista, A4_WIDTH_PX } from "@/cv/CurriculumVista"
+import { CurriculumVista, A4_WIDTH_PX, A4_HEIGHT_PX } from "@/cv/CurriculumVista"
 import { useCurriculumStore } from "@/lib/store"
 
 export function PanelVistaPrevia() {
@@ -32,6 +32,8 @@ export function PanelVistaPrevia() {
         style={{
           transform: `scale(${escala})`,
           width: A4_WIDTH_PX,
+          height: A4_HEIGHT_PX,
+          marginBottom: escala < 1 ? -(A4_HEIGHT_PX * (1 - escala)) : 0,
         }}
       >
         <CurriculumVista datos={datos} personalizacion={personalizacion} />

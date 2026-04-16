@@ -3,9 +3,9 @@
 import { PaletteIcon } from "@phosphor-icons/react"
 import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
 import { useCurriculumStore } from "@/lib/store"
-import { COLORES_TEMA, PLANTILLAS } from "@/lib/constantes"
+import { COLORES_TEMA, PLANTILLAS, FUENTES, FUENTE_CSS } from "@/lib/constantes"
 import { cn } from "@/components/ui/cn"
-import type { ColorTema, PlantillaId } from "@/types"
+import type { ColorTema, PlantillaId, FuenteId } from "@/types"
 
 export function FormPersonalizacion() {
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
@@ -62,6 +62,33 @@ export function FormPersonalizacion() {
                   : "hover:scale-105",
               )}
             />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-700">Fuente</label>
+        <div className="grid grid-cols-1 gap-2">
+          {FUENTES.map((f) => (
+            <button
+              key={f.valor}
+              type="button"
+              onClick={() => set({ fuente: f.valor as FuenteId })}
+              className={cn(
+                "rounded-lg border px-3 py-2 text-left transition-all cursor-pointer flex items-baseline gap-2",
+                (personalizacion.fuente ?? "inter") === f.valor
+                  ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+                  : "border-zinc-200 hover:border-zinc-300",
+              )}
+            >
+              <span
+                className="text-sm font-medium text-zinc-800"
+                style={{ fontFamily: FUENTE_CSS[f.valor] }}
+              >
+                {f.etiqueta}
+              </span>
+              <span className="text-xs text-zinc-500">{f.tipo}</span>
+            </button>
           ))}
         </div>
       </div>

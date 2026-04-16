@@ -2,6 +2,7 @@ import html2canvas from "html2canvas-pro"
 import { jsPDF } from "jspdf"
 import type { DatosCurriculum, Personalizacion } from "@/types"
 import { PLANTILLAS } from "@/lib/constantes"
+import { A4_WIDTH_PX, A4_HEIGHT_PX } from "@/cv/CurriculumVista"
 
 const A4_WIDTH_MM = 210
 const A4_HEIGHT_MM = 297
@@ -34,6 +35,17 @@ async function generarPdfVisual(nombreCompleto: string) {
     scale: 3,
     useCORS: true,
     backgroundColor: "#ffffff",
+    windowWidth: A4_WIDTH_PX,
+    windowHeight: A4_HEIGHT_PX,
+    onclone: (_doc: Document, elClonado: HTMLElement) => {
+      elClonado.style.transform = "none"
+      let ancestro: HTMLElement | null = elClonado.parentElement
+      while (ancestro) {
+        ancestro.style.transform = "none"
+        ancestro.classList.remove("hidden")
+        ancestro = ancestro.parentElement
+      }
+    },
   })
 
   const imgData = canvas.toDataURL("image/jpeg", 0.95)

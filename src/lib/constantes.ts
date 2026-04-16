@@ -3,6 +3,7 @@ import type {
   NivelIdioma,
   ColorTema,
   PlantillaId,
+  FuenteId,
   Personalizacion,
 } from "@/types"
 
@@ -35,9 +36,26 @@ export const PLANTILLAS: { valor: PlantillaId; etiqueta: string; descripcion: st
   { valor: "minimalista", etiqueta: "Minimalista (ATS)", descripcion: "Plano y elegante — legible por sistemas ATS", ats: true },
 ]
 
+export const FUENTES: { valor: FuenteId; etiqueta: string; tipo: string; jsPdf: string }[] = [
+  { valor: "inter", etiqueta: "Inter", tipo: "Sans-serif", jsPdf: "helvetica" },
+  { valor: "roboto", etiqueta: "Roboto", tipo: "Sans-serif", jsPdf: "helvetica" },
+  { valor: "lato", etiqueta: "Lato", tipo: "Sans-serif", jsPdf: "helvetica" },
+  { valor: "merriweather", etiqueta: "Merriweather", tipo: "Serif", jsPdf: "times" },
+  { valor: "libre-baskerville", etiqueta: "Libre Baskerville", tipo: "Serif", jsPdf: "times" },
+]
+
+export const FUENTE_CSS: Record<FuenteId, string> = {
+  inter: "var(--font-inter)",
+  roboto: "var(--font-roboto)",
+  lato: "var(--font-lato)",
+  merriweather: "var(--font-merriweather)",
+  "libre-baskerville": "var(--font-libre-baskerville)",
+}
+
 export const PERSONALIZACION_INICIAL: Personalizacion = {
   color: "azul",
   plantilla: "moderno",
+  fuente: "inter",
 }
 
 export const DATOS_INICIALES: DatosCurriculum = {

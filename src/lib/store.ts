@@ -198,6 +198,19 @@ export const useCurriculumStore = create<CurriculumStore>()(
           personalizacion: PERSONALIZACION_INICIAL,
         }),
     }),
-    { name: "curriculum-gratis" },
+    {
+      name: "curriculum-gratis",
+      merge: (persisted, current) => {
+        const estado = persisted as Record<string, unknown> | undefined
+        return {
+          ...current,
+          ...estado,
+          personalizacion: {
+            ...PERSONALIZACION_INICIAL,
+            ...(estado?.personalizacion as object),
+          },
+        } as CurriculumStore
+      },
+    },
   ),
 )

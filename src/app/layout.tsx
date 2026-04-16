@@ -1,10 +1,20 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Roboto, Lato, Merriweather, Libre_Baskerville } from "next/font/google"
 import "./globals.css"
 
-const inter = Inter({
-  subsets: ["latin"],
-})
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const roboto = Roboto({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-roboto" })
+const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-lato" })
+const merriweather = Merriweather({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-merriweather" })
+const libreBaskerville = Libre_Baskerville({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-libre-baskerville" })
+
+const clasesVariablesFuentes = [
+  inter.variable,
+  roboto.variable,
+  lato.variable,
+  merriweather.variable,
+  libreBaskerville.variable,
+].join(" ")
 
 const SITE_URL = "https://curriculum-gratis.cl"
 const TITLE = "Curriculum Gratis - Crea tu CV Profesional y Descargalo en PDF"
@@ -72,7 +82,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={inter.className}>
+    <html lang="es" className={`${inter.className} ${clasesVariablesFuentes}`}>
       <body className="min-h-screen bg-zinc-50 antialiased">{children}</body>
     </html>
   )

@@ -23,7 +23,7 @@ export function PlantillaColorido({ datos, personalizacion }: Props) {
   const { datosPersonales: dp } = datos
 
   return (
-    <div className="flex-1 flex flex-col text-[12px] leading-snug font-sans relative overflow-hidden">
+    <div className="flex-1 flex flex-col text-[12px] leading-snug relative overflow-hidden">
       {/* Formas decorativas de fondo */}
       <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10" style={{ backgroundColor: color, transform: "translate(30%, -30%)" }} />
       <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full opacity-10" style={{ backgroundColor: color, transform: "translate(-30%, 30%)" }} />

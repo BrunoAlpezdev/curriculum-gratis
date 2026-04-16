@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf"
 import type { DatosCurriculum, Personalizacion } from "@/types"
 import { getColorHex } from "@/lib/colores"
 import { formatearRangoFechas, formatearFechaEducacion } from "@/lib/formato"
+import { FUENTES } from "@/lib/constantes"
 
 const MARGIN = 20
 const PAGE_WIDTH = 210
@@ -17,6 +18,7 @@ export function generarPdfAts(
   personalizacion: Personalizacion,
 ) {
   const color = hexToRgb(getColorHex(personalizacion.color))
+  const fuenteBase = FUENTES.find((f) => f.valor === personalizacion.fuente)?.jsPdf ?? "helvetica"
   const pdf = new jsPDF("p", "mm", "a4")
   let y = MARGIN
 
@@ -46,7 +48,7 @@ export function generarPdfAts(
   // --- Header ---
   const dp = datos.datosPersonales
 
-  pdf.setFont("helvetica", "bold")
+  pdf.setFont(fuenteBase, "bold")
   pdf.setFontSize(20)
   setBlack()
   pdf.text(dp.nombreCompleto || "Tu Nombre", PAGE_WIDTH / 2, y, { align: "center" })
@@ -61,7 +63,7 @@ export function generarPdfAts(
 
   const contacto = [dp.email, dp.telefono, dp.ubicacion].filter(Boolean).join("  |  ")
   if (contacto) {
-    pdf.setFont("helvetica", "normal")
+    pdf.setFont(fuenteBase, "normal")
     pdf.setFontSize(9)
     setMuted()
     pdf.text(contacto, PAGE_WIDTH / 2, y, { align: "center" })
@@ -77,8 +79,8 @@ export function generarPdfAts(
 
   // --- Perfil ---
   if (datos.perfil) {
-    y = renderSeccion(pdf, "PERFIL PROFESIONAL", y, color)
-    pdf.setFont("helvetica", "normal")
+    y = renderSeccion(pdf, "PERFIL PROFESIONAL", y, color, fuenteBase)
+    pdf.setFont(fuenteBase, "normal")
     pdf.setFontSize(10)
     setMuted()
     const lines = pdf.splitTextToSize(datos.perfil, CONTENT_WIDTH)
@@ -89,18 +91,18 @@ export function generarPdfAts(
 
   // --- Experiencia ---
   if (datos.experiencia.length > 0) {
-    y = renderSeccion(pdf, "EXPERIENCIA LABORAL", y, color)
+    y = renderSeccion(pdf, "EXPERIENCIA LABORAL", y, color, fuenteBase)
     for (const exp of datos.experiencia) {
       checkPage(20)
 
-      pdf.setFont("helvetica", "bold")
+      pdf.setFont(fuenteBase, "bold")
       pdf.setFontSize(10)
       setBlack()
       pdf.text(exp.cargo || "Cargo", MARGIN, y)
 
       const fecha = formatearRangoFechas(exp.fechaInicio, exp.fechaFin)
       if (fecha) {
-        pdf.setFont("helvetica", "normal")
+        pdf.setFont(fuenteBase, "normal")
         pdf.setFontSize(9)
         setMuted()
         pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
@@ -109,7 +111,7 @@ export function generarPdfAts(
 
       const subtitulo = [exp.empresa, exp.ubicacion].filter(Boolean).join(" · ")
       if (subtitulo) {
-        pdf.setFont("helvetica", "oblique")
+        pdf.setFont(fuenteBase, "oblique")
         pdf.setFontSize(9)
         setMuted()
         pdf.text(subtitulo, MARGIN, y)
@@ -117,7 +119,7 @@ export function generarPdfAts(
       }
 
       if (exp.descripcion) {
-        pdf.setFont("helvetica", "normal")
+        pdf.setFont(fuenteBase, "normal")
         pdf.setFontSize(9)
         setColor(82, 82, 91)
         const lines = pdf.splitTextToSize(exp.descripcion, CONTENT_WIDTH)
@@ -127,7 +129,7 @@ export function generarPdfAts(
       }
 
       if (exp.logros) {
-        pdf.setFont("helvetica", "bold")
+        pdf.setFont(fuenteBase, "bold")
         pdf.setFontSize(9)
         setAccent()
         const lines = pdf.splitTextToSize(`Logros: ${exp.logros}`, CONTENT_WIDTH)
@@ -142,18 +144,18 @@ export function generarPdfAts(
 
   // --- Educacion ---
   if (datos.educacion.length > 0) {
-    y = renderSeccion(pdf, "EDUCACION", y, color)
+    y = renderSeccion(pdf, "EDUCACION", y, color, fuenteBase)
     for (const edu of datos.educacion) {
       checkPage(12)
 
-      pdf.setFont("helvetica", "bold")
+      pdf.setFont(fuenteBase, "bold")
       pdf.setFontSize(10)
       setBlack()
       pdf.text(edu.titulo || "Titulo", MARGIN, y)
 
       const fecha = formatearFechaEducacion(edu.fechaInicio, edu.fechaFin)
       if (fecha) {
-        pdf.setFont("helvetica", "normal")
+        pdf.setFont(fuenteBase, "normal")
         pdf.setFontSize(9)
         setMuted()
         pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
@@ -161,7 +163,7 @@ export function generarPdfAts(
       y += 4
 
       if (edu.institucion) {
-        pdf.setFont("helvetica", "oblique")
+        pdf.setFont(fuenteBase, "oblique")
         pdf.setFontSize(9)
         setMuted()
         pdf.text(edu.institucion, MARGIN, y)
@@ -169,7 +171,7 @@ export function generarPdfAts(
       }
 
       if (edu.descripcion) {
-        pdf.setFont("helvetica", "normal")
+        pdf.setFont(fuenteBase, "normal")
         pdf.setFontSize(9)
         setColor(82, 82, 91)
         const lines = pdf.splitTextToSize(edu.descripcion, CONTENT_WIDTH)
@@ -183,8 +185,8 @@ export function generarPdfAts(
 
   // --- Habilidades ---
   if (datos.habilidades.length > 0) {
-    y = renderSeccion(pdf, "COMPETENCIAS", y, color)
-    pdf.setFont("helvetica", "normal")
+    y = renderSeccion(pdf, "COMPETENCIAS", y, color, fuenteBase)
+    pdf.setFont(fuenteBase, "normal")
     pdf.setFontSize(10)
     setColor(82, 82, 91)
     const texto = datos.habilidades.join("  ·  ")
@@ -196,8 +198,8 @@ export function generarPdfAts(
 
   // --- Idiomas ---
   if (datos.idiomas.length > 0) {
-    y = renderSeccion(pdf, "IDIOMAS", y, color)
-    pdf.setFont("helvetica", "normal")
+    y = renderSeccion(pdf, "IDIOMAS", y, color, fuenteBase)
+    pdf.setFont(fuenteBase, "normal")
     pdf.setFontSize(10)
     setColor(82, 82, 91)
     const texto = datos.idiomas
@@ -217,13 +219,14 @@ function renderSeccion(
   titulo: string,
   y: number,
   color: { r: number; g: number; b: number },
+  fuenteBase: string,
 ): number {
   if (y + 10 > PAGE_HEIGHT - MARGIN) {
     pdf.addPage()
     y = MARGIN
   }
 
-  pdf.setFont("helvetica", "bold")
+  pdf.setFont(fuenteBase, "bold")
   pdf.setFontSize(10)
   pdf.setTextColor(color.r, color.g, color.b)
   pdf.text(titulo, MARGIN, y)
