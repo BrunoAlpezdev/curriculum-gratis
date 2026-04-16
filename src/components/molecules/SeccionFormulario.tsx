@@ -38,8 +38,8 @@ export function SeccionFormulario({
       </button>
       <div
         className={cn(
-          "overflow-hidden transition-all",
-          abierta ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0",
+          "transition-all",
+          abierta ? "max-h-[2000px] opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden",
         )}
       >
         <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 py-4 flex flex-col gap-4">
