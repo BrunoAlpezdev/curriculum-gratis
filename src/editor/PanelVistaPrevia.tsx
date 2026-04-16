@@ -25,7 +25,7 @@ export function PanelVistaPrevia() {
   return (
     <div
       ref={contenedorRef}
-      className="flex justify-center p-4 h-full overflow-y-auto bg-zinc-100"
+      className="flex justify-center p-4 h-full overflow-y-auto bg-zinc-100 dark:bg-zinc-950"
     >
       <div
         className="shadow-lg rounded-sm origin-top shrink-0"

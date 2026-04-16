@@ -1,4 +1,4 @@
-const MESES: Record<string, string> = {
+export const MESES: Record<string, string> = {
   "01": "Ene",
   "02": "Feb",
   "03": "Mar",

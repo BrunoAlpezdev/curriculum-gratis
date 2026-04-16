@@ -82,8 +82,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${inter.className} ${clasesVariablesFuentes}`}>
-      <body className="min-h-screen bg-zinc-50 antialiased">{children}</body>
+    <html lang="es" className={`${inter.className} ${clasesVariablesFuentes}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("tema");var d=t==="oscuro"||(t!=="claro"&&matchMedia("(prefers-color-scheme:dark)").matches);if(d)document.documentElement.classList.add("dark")}catch(e){}})()`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 antialiased">{children}</body>
     </html>
   )
 }

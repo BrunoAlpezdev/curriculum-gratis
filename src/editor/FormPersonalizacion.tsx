@@ -17,7 +17,7 @@ export function FormPersonalizacion() {
       icono={<PaletteIcon size={18} />}
     >
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-zinc-700">Plantilla</label>
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Plantilla</label>
         <div className="grid grid-cols-2 gap-2">
           {PLANTILLAS.map((p) => (
             <button
@@ -27,26 +27,26 @@ export function FormPersonalizacion() {
               className={cn(
                 "rounded-lg border p-3 text-left transition-all cursor-pointer",
                 personalizacion.plantilla === p.valor
-                  ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
-                  : "border-zinc-200 hover:border-zinc-300",
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950 ring-1 ring-blue-500"
+                  : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
               )}
             >
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-medium text-zinc-800">{p.etiqueta}</p>
+                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{p.etiqueta}</p>
                 {p.ats && (
-                  <span className="rounded bg-emerald-100 text-emerald-700 px-1.5 py-0.5 text-[10px] font-bold leading-none">
+                  <span className="rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 text-[10px] font-bold leading-none">
                     ATS
                   </span>
                 )}
               </div>
-              <p className="text-xs text-zinc-500 mt-0.5">{p.descripcion}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{p.descripcion}</p>
             </button>
           ))}
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-zinc-700">Color</label>
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Color</label>
         <div className="flex gap-2 flex-wrap">
           {COLORES_TEMA.map((c) => (
             <button
@@ -58,7 +58,7 @@ export function FormPersonalizacion() {
                 "h-8 w-8 rounded-full transition-all cursor-pointer",
                 c.clase,
                 personalizacion.color === c.valor
-                  ? "ring-2 ring-offset-2 ring-zinc-400 scale-110"
+                  ? "ring-2 ring-offset-2 ring-zinc-400 scale-110 dark:ring-offset-zinc-900"
                   : "hover:scale-105",
               )}
             />
@@ -67,7 +67,7 @@ export function FormPersonalizacion() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-zinc-700">Fuente</label>
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Fuente</label>
         <div className="grid grid-cols-1 gap-2">
           {FUENTES.map((f) => (
             <button
@@ -77,17 +77,17 @@ export function FormPersonalizacion() {
               className={cn(
                 "rounded-lg border px-3 py-2 text-left transition-all cursor-pointer flex items-baseline gap-2",
                 (personalizacion.fuente ?? "inter") === f.valor
-                  ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
-                  : "border-zinc-200 hover:border-zinc-300",
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950 ring-1 ring-blue-500"
+                  : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
               )}
             >
               <span
-                className="text-sm font-medium text-zinc-800"
+                className="text-sm font-medium text-zinc-800 dark:text-zinc-200"
                 style={{ fontFamily: FUENTE_CSS[f.valor] }}
               >
                 {f.etiqueta}
               </span>
-              <span className="text-xs text-zinc-500">{f.tipo}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">{f.tipo}</span>
             </button>
           ))}
         </div>

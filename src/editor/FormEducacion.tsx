@@ -2,6 +2,7 @@
 
 import { GraduationCapIcon, PlusIcon } from "@phosphor-icons/react"
 import { Input } from "@/components/atoms/Input"
+import { SelectorFecha } from "@/components/atoms/SelectorFecha"
 import { Textarea } from "@/components/atoms/Textarea"
 import { Button } from "@/components/atoms/Button"
 import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
@@ -38,23 +39,17 @@ export function FormEducacion() {
             }
           />
           <div className="grid grid-cols-2 gap-3">
-            <Input
+            <SelectorFecha
               label="Fecha"
-              type="month"
-              value={edu.fechaInicio}
-              onChange={(e) =>
-                actualizar(edu.id, { fechaInicio: e.target.value })
-              }
+              valor={edu.fechaInicio || null}
+              onChange={(v) => actualizar(edu.id, { fechaInicio: v ?? "" })}
             />
-            <Input
+            <SelectorFecha
               label="Fecha fin (opcional)"
-              type="month"
-              value={edu.fechaFin ?? ""}
-              onChange={(e) =>
-                actualizar(edu.id, {
-                  fechaFin: e.target.value || null,
-                })
-              }
+              valor={edu.fechaFin}
+              onChange={(v) => actualizar(edu.id, { fechaFin: v })}
+              permitirPresente
+              placeholder="Presente"
             />
           </div>
           <Textarea

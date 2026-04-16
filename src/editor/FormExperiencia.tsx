@@ -2,6 +2,7 @@
 
 import { BriefcaseIcon, PlusIcon } from "@phosphor-icons/react"
 import { Input } from "@/components/atoms/Input"
+import { SelectorFecha } from "@/components/atoms/SelectorFecha"
 import { Textarea } from "@/components/atoms/Textarea"
 import { Button } from "@/components/atoms/Button"
 import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
@@ -48,24 +49,17 @@ export function FormExperiencia() {
             }
           />
           <div className="grid grid-cols-2 gap-3">
-            <Input
+            <SelectorFecha
               label="Fecha inicio"
-              type="month"
-              value={exp.fechaInicio}
-              onChange={(e) =>
-                actualizar(exp.id, { fechaInicio: e.target.value })
-              }
+              valor={exp.fechaInicio || null}
+              onChange={(v) => actualizar(exp.id, { fechaInicio: v ?? "" })}
             />
-            <Input
+            <SelectorFecha
               label="Fecha fin"
-              type="month"
+              valor={exp.fechaFin}
+              onChange={(v) => actualizar(exp.id, { fechaFin: v })}
+              permitirPresente
               placeholder="Presente"
-              value={exp.fechaFin ?? ""}
-              onChange={(e) =>
-                actualizar(exp.id, {
-                  fechaFin: e.target.value || null,
-                })
-              }
             />
           </div>
           <Textarea
