@@ -61,6 +61,7 @@ export function BarraAcciones() {
         <Button
           variant="ghost"
           size="icon"
+          className="hidden md:inline-flex"
           onClick={() => setTema(CICLO_TEMA[tema])}
           title={ETIQUETA_TEMA[tema]}
         >
