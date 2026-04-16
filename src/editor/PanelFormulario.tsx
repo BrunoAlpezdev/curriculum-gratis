@@ -44,7 +44,7 @@ export function PanelFormulario() {
                 GitHub
               </a>
               <a
-                href="https://ko-fi.com/K3K61XWYTQ"
+                href="https://ko-fi.com/brunoalpezdev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[#72a4f2] hover:text-[#5b8fd9] transition-colors"
