@@ -7,7 +7,7 @@ import { FormExperiencia } from "@/editor/FormExperiencia"
 import { FormEducacion } from "@/editor/FormEducacion"
 import { FormHabilidades } from "@/editor/FormHabilidades"
 import { FormIdiomas } from "@/editor/FormIdiomas"
-import { GithubLogoIcon, ShieldCheckIcon } from "@phosphor-icons/react"
+import { GithubLogoIcon, ShieldCheckIcon, HeartIcon } from "@phosphor-icons/react"
 
 export function PanelFormulario() {
   return (
@@ -33,15 +33,26 @@ export function PanelFormulario() {
               Tus datos nunca salen de tu dispositivo. No guardamos ninguna
               información en bases de datos ni servidores externos.
             </p>
-            <a
-              href="https://github.com/BrunoAlpezdev/curriculum-gratis"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-blue-600 transition-colors pt-2"
-            >
-              <GithubLogoIcon size={18} weight="fill" />
-              Ver código fuente en GitHub
-            </a>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-2">
+              <a
+                href="https://github.com/BrunoAlpezdev/curriculum-gratis"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-blue-600 transition-colors"
+              >
+                <GithubLogoIcon size={18} weight="fill" />
+                GitHub
+              </a>
+              <a
+                href="https://ko-fi.com/K3K61XWYTQ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#72a4f2] hover:text-[#5b8fd9] transition-colors"
+              >
+                <HeartIcon size={18} weight="fill" />
+                Apoyar en Ko-fi
+              </a>
+            </div>
           </div>
         </div>
       </div>
