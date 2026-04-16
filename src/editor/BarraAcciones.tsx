@@ -25,65 +25,115 @@ const ETIQUETA_TEMA: Record<Tema, string> = {
   sistema: "Sistema",
 }
 
-const DATOS_MOCK: DatosCurriculum = {
-  datosPersonales: {
-    nombreCompleto: "Camila Rojas Fernandez",
+function aleatorio<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]!
+}
+
+const PERFILES_MOCK = [
+  {
+    nombre: "Camila Rojas Fernandez",
     titulo: "Ingeniera de Software Senior",
     email: "camila.rojas@email.com",
-    telefono: "+56 9 8765 4321",
-    ubicacion: "Santiago, Chile",
+    perfil: "Ingeniera de software con 6 años de experiencia desarrollando aplicaciones web escalables. Especializada en React, Node.js y arquitectura de microservicios.",
+    cargo1: "Ingeniera de Software Senior", cargo2: "Desarrolladora Full Stack",
+    habilidades: ["TypeScript", "React", "Node.js", "PostgreSQL", "Docker", "AWS", "Git", "Scrum"],
   },
-  perfil:
-    "Ingeniera de software con 6 años de experiencia desarrollando aplicaciones web escalables. Especializada en React, Node.js y arquitectura de microservicios. Apasionada por las buenas practicas de desarrollo y la mejora continua de procesos.",
-  experiencia: [
-    {
-      id: crypto.randomUUID(),
-      empresa: "TechCorp Chile",
-      cargo: "Ingeniera de Software Senior",
-      ubicacion: "Santiago, Chile",
-      fechaInicio: "2021-03",
-      fechaFin: null,
-      descripcion:
-        "Lider tecnica de un equipo de 5 desarrolladores. Diseño e implementacion de microservicios con Node.js y TypeScript. Migracion de monolito a arquitectura distribuida.",
-      logros:
-        "Reduccion del tiempo de deploy en un 60%. Mejora del rendimiento de la API principal en un 40%.",
+  {
+    nombre: "Matias Gonzalez Parra",
+    titulo: "Diseñador UX/UI",
+    email: "matias.gonzalez@email.com",
+    perfil: "Diseñador UX/UI con 5 años creando experiencias digitales centradas en el usuario. Experto en design systems, prototipado y research cualitativo.",
+    cargo1: "Diseñador UX Senior", cargo2: "Diseñador UI",
+    habilidades: ["Figma", "Prototyping", "User Research", "Design Systems", "HTML/CSS", "Accesibilidad", "Illustrator", "Motion Design"],
+  },
+  {
+    nombre: "Valentina Muñoz Lagos",
+    titulo: "Analista de Datos",
+    email: "valentina.munoz@email.com",
+    perfil: "Analista de datos con experiencia en business intelligence y machine learning. Apasionada por transformar datos complejos en insights accionables para la toma de decisiones.",
+    cargo1: "Data Analyst Senior", cargo2: "Analista de Business Intelligence",
+    habilidades: ["Python", "SQL", "Power BI", "Tableau", "Pandas", "Machine Learning", "Excel Avanzado", "ETL"],
+  },
+  {
+    nombre: "Sebastian Torres Medina",
+    titulo: "Contador Auditor",
+    email: "sebastian.torres@email.com",
+    perfil: "Contador auditor con 8 años de experiencia en auditoria financiera y tributaria. Especializado en IFRS, normativa tributaria chilena y optimizacion de procesos contables.",
+    cargo1: "Contador Senior", cargo2: "Analista Contable",
+    habilidades: ["IFRS", "Auditoria", "SAP", "Tributaria", "Excel Avanzado", "ERP", "Presupuestos", "Conciliaciones"],
+  },
+  {
+    nombre: "Francisca Herrera Soto",
+    titulo: "Project Manager",
+    email: "francisca.herrera@email.com",
+    perfil: "Project Manager certificada PMP con 7 años liderando proyectos tecnologicos de gran escala. Experiencia en metodologias agiles y gestion de equipos multidisciplinarios.",
+    cargo1: "Project Manager Senior", cargo2: "Scrum Master",
+    habilidades: ["Scrum", "Kanban", "Jira", "PMP", "Gestion de Riesgos", "Stakeholders", "OKRs", "Confluence"],
+  },
+  {
+    nombre: "Diego Vargas Cifuentes",
+    titulo: "Ingeniero Civil Industrial",
+    email: "diego.vargas@email.com",
+    perfil: "Ingeniero civil industrial con enfoque en optimizacion de procesos y gestion de operaciones. Experiencia en logistica, supply chain y mejora continua con metodologia Lean.",
+    cargo1: "Jefe de Operaciones", cargo2: "Analista de Procesos",
+    habilidades: ["Lean", "Six Sigma", "SAP", "Power BI", "Gestion de Proyectos", "Logistica", "KPIs", "Simulacion"],
+  },
+]
+
+const EMPRESAS = ["TechCorp Chile", "StartupLab", "Globant", "Falabella Tech", "Banco Estado", "Entel", "LATAM Airlines", "Walmart Chile", "Cencosud", "BCI Labs"]
+const UBICACIONES = ["Santiago, Chile", "Valparaiso, Chile", "Concepcion, Chile", "Viña del Mar, Chile", "La Serena, Chile"]
+const INSTITUCIONES = ["Universidad de Chile", "PUC Chile", "Universidad de Santiago", "Universidad Tecnica Federico Santa Maria", "Universidad de Concepcion", "Duoc UC"]
+const CARRERAS = ["Ingenieria Civil en Computacion", "Ingenieria Comercial", "Diseño Grafico", "Contabilidad y Auditoria", "Ingenieria Civil Industrial", "Administracion de Empresas"]
+
+function generarDatosMock(): DatosCurriculum {
+  const perfil = aleatorio(PERFILES_MOCK)
+  return {
+    datosPersonales: {
+      nombreCompleto: perfil.nombre,
+      titulo: perfil.titulo,
+      email: perfil.email,
+      telefono: `+56 9 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`,
+      ubicacion: aleatorio(UBICACIONES),
     },
-    {
-      id: crypto.randomUUID(),
-      empresa: "StartupLab",
-      cargo: "Desarrolladora Full Stack",
-      ubicacion: "Valparaiso, Chile",
-      fechaInicio: "2018-06",
-      fechaFin: "2021-02",
-      descripcion:
-        "Desarrollo de plataforma SaaS de gestion de inventario. Implementacion de frontend con React y backend con Express. Integracion con APIs de pago y logistica.",
-      logros: "Crecimiento de 0 a 15.000 usuarios activos en 18 meses.",
-    },
-  ],
-  educacion: [
-    {
-      id: crypto.randomUUID(),
-      institucion: "Universidad de Chile",
-      titulo: "Ingenieria Civil en Computacion",
-      fechaInicio: "2013-03",
-      fechaFin: "2018-01",
-      descripcion: "Mencion en Ingenieria de Software. Mejor promedio de generacion.",
-    },
-  ],
-  habilidades: [
-    "TypeScript",
-    "React",
-    "Node.js",
-    "PostgreSQL",
-    "Docker",
-    "AWS",
-    "Git",
-    "Scrum",
-  ],
-  idiomas: [
-    { id: crypto.randomUUID(), nombre: "Español", nivel: "nativo" },
-    { id: crypto.randomUUID(), nombre: "Ingles", nivel: "avanzado" },
-  ],
+    perfil: perfil.perfil,
+    experiencia: [
+      {
+        id: crypto.randomUUID(),
+        empresa: aleatorio(EMPRESAS),
+        cargo: perfil.cargo1,
+        ubicacion: aleatorio(UBICACIONES),
+        fechaInicio: "2021-03",
+        fechaFin: null,
+        descripcion: "Liderazgo tecnico y desarrollo de soluciones de alto impacto. Colaboracion directa con stakeholders para definir roadmap de producto.",
+        logros: "Reduccion de costos operativos en un 30%. Implementacion de procesos que mejoraron la productividad del equipo.",
+      },
+      {
+        id: crypto.randomUUID(),
+        empresa: aleatorio(EMPRESAS),
+        cargo: perfil.cargo2,
+        ubicacion: aleatorio(UBICACIONES),
+        fechaInicio: "2018-06",
+        fechaFin: "2021-02",
+        descripcion: "Desarrollo e implementacion de proyectos clave para el area. Coordinacion con equipos multidisciplinarios.",
+        logros: "Reconocimiento como mejor profesional del area en 2020.",
+      },
+    ],
+    educacion: [
+      {
+        id: crypto.randomUUID(),
+        institucion: aleatorio(INSTITUCIONES),
+        titulo: aleatorio(CARRERAS),
+        fechaInicio: "2013-03",
+        fechaFin: "2018-01",
+        descripcion: "Graduacion con distincion. Participacion activa en proyectos de investigacion.",
+      },
+    ],
+    habilidades: perfil.habilidades,
+    idiomas: [
+      { id: crypto.randomUUID(), nombre: "Español", nivel: "nativo" },
+      { id: crypto.randomUUID(), nombre: "Ingles", nivel: "avanzado" },
+    ],
+  }
 }
 
 const TAPS_REQUERIDOS = 5
@@ -102,7 +152,7 @@ export function BarraAcciones() {
     tapsRef.current.push(ahora)
     if (tapsRef.current.length >= TAPS_REQUERIDOS) {
       tapsRef.current = []
-      useCurriculumStore.setState({ datos: DATOS_MOCK })
+      useCurriculumStore.setState({ datos: generarDatosMock() })
     }
   }
 
