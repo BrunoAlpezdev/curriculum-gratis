@@ -18,10 +18,19 @@ interface SelectorFechaProps {
   placeholder?: string
 }
 
+const ANIO_ACTUAL = new Date().getFullYear()
+const ANIO_MIN = 1950
+const ANIO_MAX = ANIO_ACTUAL + 1
+
+function clampAnio(anio: number): number {
+  if (anio < ANIO_MIN || anio > ANIO_MAX) return ANIO_ACTUAL
+  return anio
+}
+
 function parsearAnio(valor: string | null): number {
-  if (!valor) return new Date().getFullYear()
+  if (!valor) return ANIO_ACTUAL
   const anio = parseInt(valor.split("-")[0] ?? "", 10)
-  return isNaN(anio) ? new Date().getFullYear() : anio
+  return isNaN(anio) ? ANIO_ACTUAL : clampAnio(anio)
 }
 
 function parsearMes(valor: string | null): string | null {
@@ -37,6 +46,137 @@ function formatearTexto(valor: string | null, placeholder: string): string {
   return `${MESES[mes] ?? mes} ${anio}`
 }
 
+const ANIOS_POR_PAGINA = 12
+
+function VistaMeses({
+  anioVisible,
+  anioSeleccionado,
+  mesSeleccionado,
+  onAnioAnterior,
+  onAnioSiguiente,
+  onClickAnio,
+  onSeleccionarMes,
+}: {
+  anioVisible: number
+  anioSeleccionado: number | null
+  mesSeleccionado: string | null
+  onAnioAnterior: () => void
+  onAnioSiguiente: () => void
+  onClickAnio: () => void
+  onSeleccionarMes: (mes: string) => void
+}) {
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onAnioAnterior}
+          className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+        >
+          <CaretLeftIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
+        </button>
+        <button
+          type="button"
+          onClick={onClickAnio}
+          className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer px-2 py-0.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        >
+          {anioVisible}
+        </button>
+        <button
+          type="button"
+          onClick={onAnioSiguiente}
+          className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+        >
+          <CaretRightIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-1">
+        {MESES_LISTA.map((m) => {
+          const seleccionado =
+            mesSeleccionado === m.valor && anioSeleccionado === anioVisible
+          return (
+            <button
+              key={m.valor}
+              type="button"
+              onClick={() => onSeleccionarMes(m.valor)}
+              className={cn(
+                "py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
+                seleccionado
+                  ? "bg-blue-600 text-white"
+                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              )}
+            >
+              {m.etiqueta}
+            </button>
+          )
+        })}
+      </div>
+    </>
+  )
+}
+
+function VistaAnios({
+  anioVisible,
+  anioSeleccionado,
+  onSeleccionar,
+}: {
+  anioVisible: number
+  anioSeleccionado: number | null
+  onSeleccionar: (anio: number) => void
+}) {
+  const inicio = anioVisible - (anioVisible % ANIOS_POR_PAGINA)
+  const [paginaInicio, setPaginaInicio] = useState(inicio)
+
+  useEffect(() => {
+    setPaginaInicio(anioVisible - (anioVisible % ANIOS_POR_PAGINA))
+  }, [anioVisible])
+
+  const aniosPagina = Array.from({ length: ANIOS_POR_PAGINA }, (_, i) => paginaInicio + i)
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setPaginaInicio((p) => Math.max(ANIO_MIN - (ANIO_MIN % ANIOS_POR_PAGINA), p - ANIOS_POR_PAGINA))}
+          className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+        >
+          <CaretLeftIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
+        </button>
+        <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+          {paginaInicio} - {paginaInicio + ANIOS_POR_PAGINA - 1}
+        </span>
+        <button
+          type="button"
+          onClick={() => setPaginaInicio((p) => Math.min(ANIO_MAX - (ANIO_MAX % ANIOS_POR_PAGINA), p + ANIOS_POR_PAGINA))}
+          className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+        >
+          <CaretRightIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-1">
+        {aniosPagina.map((a) => (
+          <button
+            key={a}
+            type="button"
+            onClick={() => onSeleccionar(a)}
+            className={cn(
+              "py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
+              a === anioSeleccionado
+                ? "bg-blue-600 text-white"
+                : a === anioVisible
+                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            )}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
 export function SelectorFecha({
   label,
   valor,
@@ -47,6 +187,7 @@ export function SelectorFecha({
   const autoId = useId()
   const [abierto, setAbierto] = useState(false)
   const [anioVisible, setAnioVisible] = useState(() => parsearAnio(valor))
+  const [vistaAnios, setVistaAnios] = useState(false)
   const contenedorRef = useRef<HTMLDivElement>(null)
 
   const mesSeleccionado = parsearMes(valor)
@@ -75,7 +216,10 @@ export function SelectorFecha({
   }, [abierto])
 
   useEffect(() => {
-    if (abierto) setAnioVisible(parsearAnio(valor))
+    if (abierto) {
+      setAnioVisible(parsearAnio(valor))
+      setVistaAnios(false)
+    }
   }, [abierto, valor])
 
   function seleccionarMes(mes: string) {
@@ -111,49 +255,23 @@ export function SelectorFecha({
 
       {abierto && (
         <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg p-3 flex flex-col gap-2">
-          {/* Navegacion de año */}
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setAnioVisible((a) => a - 1)}
-              className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              <CaretLeftIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
-            </button>
-            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-              {anioVisible}
-            </span>
-            <button
-              type="button"
-              onClick={() => setAnioVisible((a) => a + 1)}
-              className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              <CaretRightIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
-            </button>
-          </div>
-
-          {/* Grid de meses */}
-          <div className="grid grid-cols-3 gap-1">
-            {MESES_LISTA.map((m) => {
-              const seleccionado =
-                mesSeleccionado === m.valor && anioSeleccionado === anioVisible
-              return (
-                <button
-                  key={m.valor}
-                  type="button"
-                  onClick={() => seleccionarMes(m.valor)}
-                  className={cn(
-                    "py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
-                    seleccionado
-                      ? "bg-blue-600 text-white"
-                      : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                  )}
-                >
-                  {m.etiqueta}
-                </button>
-              )
-            })}
-          </div>
+          {vistaAnios ? (
+            <VistaAnios
+              anioVisible={anioVisible}
+              anioSeleccionado={anioSeleccionado}
+              onSeleccionar={(a) => { setAnioVisible(a); setVistaAnios(false) }}
+            />
+          ) : (
+            <VistaMeses
+              anioVisible={anioVisible}
+              anioSeleccionado={anioSeleccionado}
+              mesSeleccionado={mesSeleccionado}
+              onAnioAnterior={() => setAnioVisible((a) => Math.max(ANIO_MIN, a - 1))}
+              onAnioSiguiente={() => setAnioVisible((a) => Math.min(ANIO_MAX, a + 1))}
+              onClickAnio={() => setVistaAnios(true)}
+              onSeleccionarMes={seleccionarMes}
+            />
+          )}
 
           {/* Boton Presente */}
           {permitirPresente && (

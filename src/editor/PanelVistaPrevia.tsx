@@ -11,32 +11,42 @@ export function PanelVistaPrevia() {
   const [escala, setEscala] = useState(1)
 
   useEffect(() => {
-    function calcularEscala() {
-      if (!contenedorRef.current) return
-      const anchoDisponible = contenedorRef.current.clientWidth - 32 // padding
-      setEscala(Math.min(1, anchoDisponible / A4_WIDTH_PX))
-    }
+    const el = contenedorRef.current
+    if (!el) return
 
-    calcularEscala()
-    window.addEventListener("resize", calcularEscala)
-    return () => window.removeEventListener("resize", calcularEscala)
+    const observer = new ResizeObserver(() => {
+      const anchoDisponible = el.clientWidth - 32 // padding
+      if (anchoDisponible > 0) {
+        setEscala(Math.min(1, anchoDisponible / A4_WIDTH_PX))
+      }
+    })
+
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [])
 
   return (
     <div
       ref={contenedorRef}
-      className="flex justify-center p-4 h-full overflow-y-auto bg-zinc-100 dark:bg-zinc-950"
+      className="p-4 h-full overflow-y-auto bg-zinc-100 dark:bg-zinc-950"
     >
       <div
-        className="shadow-lg rounded-sm origin-top shrink-0"
+        className="mx-auto"
         style={{
-          transform: `scale(${escala})`,
-          width: A4_WIDTH_PX,
-          height: A4_HEIGHT_PX,
-          marginBottom: escala < 1 ? -(A4_HEIGHT_PX * (1 - escala)) : 0,
+          width: A4_WIDTH_PX * escala,
+          height: A4_HEIGHT_PX * escala,
         }}
       >
-        <CurriculumVista datos={datos} personalizacion={personalizacion} />
+        <div
+          className="shadow-lg rounded-sm origin-top-left"
+          style={{
+            transform: `scale(${escala})`,
+            width: A4_WIDTH_PX,
+            height: A4_HEIGHT_PX,
+          }}
+        >
+          <CurriculumVista datos={datos} personalizacion={personalizacion} />
+        </div>
       </div>
     </div>
   )
