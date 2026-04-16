@@ -28,7 +28,13 @@ export function BarraAcciones() {
   const [descargando, setDescargando] = useState(false)
   const datos = useCurriculumStore((s) => s.datos)
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
-  const reiniciar = useCurriculumStore((s) => s.reiniciar)
+  const reiniciarStore = useCurriculumStore((s) => s.reiniciar)
+
+  function reiniciar() {
+    if (window.confirm("¿Seguro que quieres reiniciar? Se borrarán todos los datos del curriculum.")) {
+      reiniciarStore()
+    }
+  }
   const { tema, setTema } = useTema()
 
   async function descargar() {
