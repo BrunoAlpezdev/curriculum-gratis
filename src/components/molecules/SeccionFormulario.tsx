@@ -18,12 +18,19 @@ export function SeccionFormulario({
   defaultAbierta = true,
 }: SeccionFormularioProps) {
   const [abierta, setAbierta] = useState(defaultAbierta)
+  const [overflowVisible, setOverflowVisible] = useState(defaultAbierta)
+
+  function toggle() {
+    const siguiente = !abierta
+    setAbierta(siguiente)
+    if (!siguiente) setOverflowVisible(false)
+  }
 
   return (
     <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
       <button
         type="button"
-        onClick={() => setAbierta(!abierta)}
+        onClick={toggle}
         className="flex w-full items-center justify-between px-4 py-3 cursor-pointer"
       >
         <div className="flex items-center gap-2">
@@ -38,12 +45,17 @@ export function SeccionFormulario({
       </button>
       <div
         className={cn(
-          "transition-all",
-          abierta ? "max-h-[2000px] opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden",
+          "grid transition-[grid-template-rows,opacity] duration-300 ease-in-out",
+          abierta ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         )}
+        onTransitionEnd={() => {
+          if (abierta) setOverflowVisible(true)
+        }}
       >
-        <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 py-4 flex flex-col gap-4">
-          {children}
+        <div className={cn("min-h-0", overflowVisible ? "overflow-visible" : "overflow-hidden")}>
+          <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 py-4 flex flex-col gap-4">
+            {children}
+          </div>
         </div>
       </div>
     </div>
