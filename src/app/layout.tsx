@@ -90,7 +90,24 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 antialiased">{children}</body>
+      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Curriculum Gratis",
+              url: SITE_URL,
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              description: DESCRIPTION,
+            }),
+          }}
+        />
+        {children}
+      </body>
     </html>
   )
 }
