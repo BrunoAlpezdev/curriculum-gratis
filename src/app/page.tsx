@@ -1,65 +1,127 @@
-import Image from "next/image";
+import { Editor } from "@/editor/Editor"
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Curriculum Gratis",
+  url: "https://curriculum-gratis.cl",
+  description:
+    "Creador de curriculum vitae 100% gratuito. Sin registro, sin pagos, sin trucos. Elige entre 4 plantillas profesionales, personaliza colores y descarga tu CV en PDF al instante.",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "CLP",
+  },
+  featureList: [
+    "Crear curriculum vitae gratis",
+    "4 plantillas profesionales",
+    "7 colores personalizables",
+    "Descarga en PDF",
+    "Sin registro ni cuenta",
+    "Datos guardados en tu navegador",
+  ],
+  inLanguage: "es",
+}
+
+const FAQ_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "¿Es realmente gratis crear un curriculum?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Si, 100% gratis. No pedimos registro, no hay pagos ocultos, no hay marcas de agua. Creas tu CV y lo descargas en PDF sin costo.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Necesito crear una cuenta?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. Tus datos se guardan automaticamente en tu navegador. No necesitas cuenta, email ni contrasena.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Puedo descargar mi curriculum en PDF?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Si. Haz click en Descargar PDF y se descarga automaticamente. El PDF es de alta calidad, listo para enviar a empleadores.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Que plantillas de curriculum tienen disponibles?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Tenemos 4 plantillas: Clasico (estilo Harvard), Moderno (con sidebar), Colorido (con header grande y formas decorativas), y Minimalista (plano y elegante). Todas son personalizables con 7 colores.",
+      },
+    },
+  ],
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
+      />
+
+      {/* Contenido SEO — visible para Google, oculto visualmente */}
+      <div className="sr-only">
+        <h1>Curriculum Gratis — Crea tu CV Profesional y Descargalo en PDF</h1>
+        <p>
+          El creador de curriculum vitae mas simple y gratuito. Sin registro, sin
+          pagos, sin trucos. Perfecto para buscar trabajo en Chile y
+          Latinoamerica.
+        </p>
+        <h2>Crea tu curriculum en minutos</h2>
+        <p>
+          Llena tus datos personales, experiencia laboral, educacion,
+          habilidades e idiomas. Ve la vista previa en tiempo real y descarga tu
+          CV profesional en PDF con un click.
+        </p>
+        <h2>4 plantillas profesionales gratuitas</h2>
+        <ul>
+          <li>Clasico — Estilo Harvard, limpio y profesional</li>
+          <li>Moderno — Sidebar con iconos y color</li>
+          <li>Colorido — Header grande con formas decorativas</li>
+          <li>Minimalista — Plano y elegante, sin adornos</li>
+        </ul>
+        <h2>Personaliza tu curriculum</h2>
+        <p>
+          Elige entre 7 colores de acento: azul, verde, rojo, morado, teal,
+          naranja y gris. Cambia de plantilla con un click y ve los cambios al
+          instante.
+        </p>
+        <h2>Preguntas frecuentes</h2>
+        <h3>¿Es realmente gratis crear un curriculum?</h3>
+        <p>
+          Si, 100% gratis. No pedimos registro, no hay pagos ocultos, no hay
+          marcas de agua. Creas tu CV y lo descargas en PDF sin costo.
+        </p>
+        <h3>¿Necesito crear una cuenta?</h3>
+        <p>
+          No. Tus datos se guardan automaticamente en tu navegador. No necesitas
+          cuenta, email ni contrasena.
+        </p>
+        <h3>¿Puedo descargar mi curriculum en PDF?</h3>
+        <p>
+          Si. Haz click en Descargar PDF y se descarga automaticamente. El PDF
+          es de alta calidad, listo para enviar a empleadores.
+        </p>
+      </div>
+
+      <Editor />
+    </>
+  )
 }
