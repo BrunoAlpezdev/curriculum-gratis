@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Inter, Roboto, Lato, Merriweather, Libre_Baskerville } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
@@ -107,6 +108,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   )
