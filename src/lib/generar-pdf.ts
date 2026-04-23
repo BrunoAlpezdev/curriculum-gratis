@@ -31,33 +31,27 @@ async function generarPdfVisual(nombreCompleto: string) {
   const el = document.getElementById("curriculum-pdf")
   if (!el) return
 
-  /* Si el contenido excede una pagina, usamos la altura real del elemento.
-     html2canvas recorta al valor de `height`, asi que fijarlo en A4_HEIGHT_PX
-     truncaba CVs largos a la primera pagina. */
-  const alturaReal = Math.max(el.offsetHeight, A4_HEIGHT_PX)
+  /* scrollHeight incluye overflow invisible; offsetHeight solo el box renderizado.
+     En flex columns el contenido a veces queda flush al border y offsetHeight
+     se queda corto — scrollHeight es mas robusto para medir el contenido real. */
+  const alturaContenido = Math.max(el.scrollHeight, el.offsetHeight, A4_HEIGHT_PX)
 
-  /* scale 4 ≈ 382 DPI — calidad print. Aumentar mas reventaria memoria del browser
-     en CVs multipagina (canvas = 794*4 x 1123*4*N px) */
   const canvas = await html2canvas(el, {
-    scale: 4,
+    scale: 3,
     useCORS: true,
     backgroundColor: "#ffffff",
     windowWidth: A4_WIDTH_PX,
-    windowHeight: alturaReal,
+    windowHeight: alturaContenido,
     width: A4_WIDTH_PX,
-    height: alturaReal,
+    height: alturaContenido,
     onclone: (_doc: Document, elClonado: HTMLElement) => {
-      /* Forzar dimensiones exactas A4 en el clon para que
-         no dependa del layout del padre ni del DPI del device */
+      /* No forzamos height — dejamos que el clon crezca con su contenido.
+         Forzar height + position absolute colapsaba el rendering a 1 pagina. */
       elClonado.style.width = `${A4_WIDTH_PX}px`
       elClonado.style.minWidth = `${A4_WIDTH_PX}px`
       elClonado.style.maxWidth = `${A4_WIDTH_PX}px`
       elClonado.style.minHeight = `${A4_HEIGHT_PX}px`
-      elClonado.style.height = `${alturaReal}px`
       elClonado.style.transform = "none"
-      elClonado.style.position = "absolute"
-      elClonado.style.top = "0"
-      elClonado.style.left = "0"
 
       let ancestro: HTMLElement | null = elClonado.parentElement
       while (ancestro) {
@@ -70,22 +64,48 @@ async function generarPdfVisual(nombreCompleto: string) {
   })
 
   /* PNG preserva texto nitido (JPEG generaba halos alrededor de cada letra).
-     compress: true en jsPDF aplica deflate al PNG antes de embeberlo,
-     asi que el peso final queda razonable aunque PNG pese mas en memoria. */
-  const imgData = canvas.toDataURL("image/png")
+     compress: true en jsPDF aplica deflate al PNG antes de embeberlo. */
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true })
 
   const imgWidth = A4_WIDTH_MM
   const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width
 
   if (imgHeight <= A4_HEIGHT_MM + A4_TOLERANCIA_MM) {
+    const imgData = canvas.toDataURL("image/png")
     pdf.addImage(imgData, "PNG", 0, 0, imgWidth, A4_HEIGHT_MM, undefined, "FAST")
   } else {
-    let posY = 0
-    while (posY < imgHeight) {
-      if (posY > 0) pdf.addPage()
-      pdf.addImage(imgData, "PNG", 0, -posY, imgWidth, imgHeight, undefined, "FAST")
-      posY += A4_HEIGHT_MM
+    /* Multi-pagina: recortamos el canvas en slices de altura A4 y
+       embebemos cada uno por separado. Evita depender de PDF viewers
+       para clipear una imagen gigante que se extiende mas alla de la pagina. */
+    const pxPorMm = canvas.width / A4_WIDTH_MM
+    const altoSliceCanvasPx = A4_HEIGHT_MM * pxPorMm
+    let offsetPx = 0
+    let paginaIdx = 0
+
+    while (offsetPx < canvas.height - 2) {
+      const altoRestante = canvas.height - offsetPx
+      const alturaEstaSlice = Math.min(altoSliceCanvasPx, altoRestante)
+
+      const sliceCanvas = document.createElement("canvas")
+      sliceCanvas.width = canvas.width
+      sliceCanvas.height = alturaEstaSlice
+      const ctx = sliceCanvas.getContext("2d")
+      if (!ctx) break
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height)
+      ctx.drawImage(
+        canvas,
+        0, offsetPx, canvas.width, alturaEstaSlice,
+        0, 0, sliceCanvas.width, alturaEstaSlice,
+      )
+
+      if (paginaIdx > 0) pdf.addPage()
+      const sliceData = sliceCanvas.toDataURL("image/png")
+      const sliceAltoMm = alturaEstaSlice / pxPorMm
+      pdf.addImage(sliceData, "PNG", 0, 0, imgWidth, sliceAltoMm, undefined, "FAST")
+
+      offsetPx += altoSliceCanvasPx
+      paginaIdx += 1
     }
   }
 
