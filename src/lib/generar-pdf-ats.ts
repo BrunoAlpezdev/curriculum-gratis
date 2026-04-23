@@ -1,8 +1,9 @@
 import { jsPDF } from "jspdf"
-import type { DatosCurriculum, Personalizacion } from "@/types"
+import type { DatosCurriculum, Personalizacion, SeccionOrdenable } from "@/types"
 import { getColorHex } from "@/lib/colores"
-import { formatearRangoFechas, formatearFechaEducacion } from "@/lib/formato"
-import { FUENTES } from "@/lib/constantes"
+import { formatearRangoFechas, formatearFechaEducacion, formatearFecha } from "@/lib/formato"
+import { FUENTES, ORDEN_SECCIONES_INICIAL } from "@/lib/constantes"
+import { etiquetasCv } from "@/lib/etiquetas-cv"
 
 const MARGIN = 20
 const PAGE_WIDTH = 210
@@ -19,6 +20,7 @@ export function generarPdfAts(
 ) {
   const color = hexToRgb(getColorHex(personalizacion.color))
   const fuenteBase = FUENTES.find((f) => f.valor === personalizacion.fuente)?.jsPdf ?? "helvetica"
+  const e = etiquetasCv(personalizacion.idiomaCv)
   const pdf = new jsPDF("p", "mm", "a4")
   let y = MARGIN
 
@@ -45,13 +47,24 @@ export function generarPdfAts(
     setColor(113, 113, 122)
   }
 
+  /* Escribe cada linea con un checkPage entre medio para que
+     bloques largos (perfil, descripciones) salten correctamente
+     de pagina en vez de overflowear al borde inferior. */
+  function escribirLineas(lineas: string[], altoLinea: number) {
+    for (const linea of lineas) {
+      checkPage(altoLinea)
+      pdf.text(linea, MARGIN, y)
+      y += altoLinea
+    }
+  }
+
   // --- Header ---
   const dp = datos.datosPersonales
 
   pdf.setFont(fuenteBase, "bold")
   pdf.setFontSize(20)
   setBlack()
-  pdf.text(dp.nombreCompleto || "Tu Nombre", PAGE_WIDTH / 2, y, { align: "center" })
+  pdf.text(dp.nombreCompleto || e.tuNombre, PAGE_WIDTH / 2, y, { align: "center" })
   y += 7
 
   if (dp.titulo) {
@@ -70,6 +83,15 @@ export function generarPdfAts(
     y += 4
   }
 
+  const enlaces = [dp.linkedin, dp.github, dp.sitioWeb].filter(Boolean).join("  |  ")
+  if (enlaces) {
+    pdf.setFont(fuenteBase, "normal")
+    pdf.setFontSize(9)
+    setMuted()
+    pdf.text(enlaces, PAGE_WIDTH / 2, y, { align: "center" })
+    y += 4
+  }
+
   // Linea separadora
   setAccent()
   pdf.setLineWidth(0.5)
@@ -79,135 +101,288 @@ export function generarPdfAts(
 
   // --- Perfil ---
   if (datos.perfil) {
-    y = renderSeccion(pdf, "PERFIL PROFESIONAL", y, color, fuenteBase)
+    y = renderSeccion(pdf, e.perfilProfesional.toUpperCase(), y, color, fuenteBase)
     pdf.setFont(fuenteBase, "normal")
     pdf.setFontSize(10)
     setMuted()
     const lines = pdf.splitTextToSize(datos.perfil, CONTENT_WIDTH)
-    checkPage(lines.length * 4)
-    pdf.text(lines, MARGIN, y)
-    y += lines.length * 4 + 4
+    escribirLineas(lines, 4)
+    y += 4
   }
 
-  // --- Experiencia ---
-  if (datos.experiencia.length > 0) {
-    y = renderSeccion(pdf, "EXPERIENCIA LABORAL", y, color, fuenteBase)
-    for (const exp of datos.experiencia) {
-      checkPage(20)
+  const renderers: Record<SeccionOrdenable, () => void> = {
+    experiencia: () => {
+      if (datos.experiencia.length === 0) return
+      y = renderSeccion(pdf, e.experienciaLaboral.toUpperCase(), y, color, fuenteBase)
+      for (const exp of datos.experiencia) {
+        checkPage(20)
 
-      pdf.setFont(fuenteBase, "bold")
-      pdf.setFontSize(10)
-      setBlack()
-      pdf.text(exp.cargo || "Cargo", MARGIN, y)
-
-      const fecha = formatearRangoFechas(exp.fechaInicio, exp.fechaFin)
-      if (fecha) {
-        pdf.setFont(fuenteBase, "normal")
-        pdf.setFontSize(9)
-        setMuted()
-        pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
-      }
-      y += 4
-
-      const subtitulo = [exp.empresa, exp.ubicacion].filter(Boolean).join(" · ")
-      if (subtitulo) {
-        pdf.setFont(fuenteBase, "oblique")
-        pdf.setFontSize(9)
-        setMuted()
-        pdf.text(subtitulo, MARGIN, y)
-        y += 4
-      }
-
-      if (exp.descripcion) {
-        pdf.setFont(fuenteBase, "normal")
-        pdf.setFontSize(9)
-        setColor(82, 82, 91)
-        const lines = pdf.splitTextToSize(exp.descripcion, CONTENT_WIDTH)
-        checkPage(lines.length * 3.5)
-        pdf.text(lines, MARGIN, y)
-        y += lines.length * 3.5 + 1
-      }
-
-      if (exp.logros) {
         pdf.setFont(fuenteBase, "bold")
-        pdf.setFontSize(9)
-        setAccent()
-        const lines = pdf.splitTextToSize(`Logros: ${exp.logros}`, CONTENT_WIDTH)
-        checkPage(lines.length * 3.5)
-        pdf.text(lines, MARGIN, y)
-        y += lines.length * 3.5 + 1
-      }
+        pdf.setFontSize(10)
+        setBlack()
+        pdf.text(exp.cargo || e.cargo, MARGIN, y)
 
-      y += 2
-    }
-  }
-
-  // --- Educacion ---
-  if (datos.educacion.length > 0) {
-    y = renderSeccion(pdf, "EDUCACION", y, color, fuenteBase)
-    for (const edu of datos.educacion) {
-      checkPage(12)
-
-      pdf.setFont(fuenteBase, "bold")
-      pdf.setFontSize(10)
-      setBlack()
-      pdf.text(edu.titulo || "Titulo", MARGIN, y)
-
-      const fecha = formatearFechaEducacion(edu.fechaInicio, edu.fechaFin)
-      if (fecha) {
-        pdf.setFont(fuenteBase, "normal")
-        pdf.setFontSize(9)
-        setMuted()
-        pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
-      }
-      y += 4
-
-      if (edu.institucion) {
-        pdf.setFont(fuenteBase, "oblique")
-        pdf.setFontSize(9)
-        setMuted()
-        pdf.text(edu.institucion, MARGIN, y)
+        const fecha = formatearRangoFechas(exp.fechaInicio, exp.fechaFin)
+        if (fecha) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
+        }
         y += 4
-      }
 
-      if (edu.descripcion) {
-        pdf.setFont(fuenteBase, "normal")
-        pdf.setFontSize(9)
-        setColor(82, 82, 91)
-        const lines = pdf.splitTextToSize(edu.descripcion, CONTENT_WIDTH)
-        pdf.text(lines, MARGIN, y)
-        y += lines.length * 3.5 + 1
-      }
+        const subtitulo = [exp.empresa, exp.ubicacion].filter(Boolean).join(" · ")
+        if (subtitulo) {
+          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(subtitulo, MARGIN, y)
+          y += 4
+        }
 
+        if (exp.descripcion) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setColor(82, 82, 91)
+          const lines = pdf.splitTextToSize(exp.descripcion, CONTENT_WIDTH)
+          escribirLineas(lines, 3.5)
+          y += 1
+        }
+
+        if (exp.logros) {
+          pdf.setFont(fuenteBase, "bold")
+          pdf.setFontSize(9)
+          setAccent()
+          const lines = pdf.splitTextToSize(`${e.logros}: ${exp.logros}`, CONTENT_WIDTH)
+          escribirLineas(lines, 3.5)
+          y += 1
+        }
+
+        y += 2
+      }
+    },
+    educacion: () => {
+      if (datos.educacion.length === 0) return
+      y = renderSeccion(pdf, e.educacion.toUpperCase(), y, color, fuenteBase)
+      for (const edu of datos.educacion) {
+        checkPage(12)
+
+        pdf.setFont(fuenteBase, "bold")
+        pdf.setFontSize(10)
+        setBlack()
+        pdf.text(edu.titulo || e.titulo, MARGIN, y)
+
+        const fecha = formatearFechaEducacion(edu.fechaInicio, edu.fechaFin)
+        if (fecha) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
+        }
+        y += 4
+
+        if (edu.institucion) {
+          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(edu.institucion, MARGIN, y)
+          y += 4
+        }
+
+        if (edu.descripcion) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setColor(82, 82, 91)
+          const lines = pdf.splitTextToSize(edu.descripcion, CONTENT_WIDTH)
+          escribirLineas(lines, 3.5)
+          y += 1
+        }
+
+        y += 2
+      }
+    },
+    cursos: () => {
+      if (datos.cursos.length === 0) return
+      y = renderSeccion(pdf, e.cursosCertificaciones.toUpperCase(), y, color, fuenteBase)
+      for (const curso of datos.cursos) {
+        checkPage(10)
+
+        pdf.setFont(fuenteBase, "bold")
+        pdf.setFontSize(10)
+        setBlack()
+        pdf.text(curso.nombre || e.curso, MARGIN, y)
+
+        if (curso.fecha) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(formatearFecha(curso.fecha), PAGE_WIDTH - MARGIN, y, { align: "right" })
+        }
+        y += 4
+
+        if (curso.institucion) {
+          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(curso.institucion, MARGIN, y)
+          y += 4
+        }
+
+        if (curso.url) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(curso.url, MARGIN, y)
+          y += 4
+        }
+
+        y += 1
+      }
       y += 2
+    },
+    proyectos: () => {
+      if (datos.proyectos.length === 0) return
+      y = renderSeccion(pdf, e.proyectos.toUpperCase(), y, color, fuenteBase)
+      for (const p of datos.proyectos) {
+        checkPage(14)
+
+        pdf.setFont(fuenteBase, "bold")
+        pdf.setFontSize(10)
+        setBlack()
+        pdf.text(p.nombre || e.proyecto, MARGIN, y)
+
+        if (p.url) {
+          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(p.url, PAGE_WIDTH - MARGIN, y, { align: "right" })
+        }
+        y += 4
+
+        if (p.tecnologias) {
+          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(p.tecnologias, MARGIN, y)
+          y += 4
+        }
+
+        if (p.descripcion) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setColor(82, 82, 91)
+          const lines = pdf.splitTextToSize(p.descripcion, CONTENT_WIDTH)
+          escribirLineas(lines, 3.5)
+          y += 1
+        }
+
+        y += 2
+      }
+    },
+    habilidades: () => {
+      if (datos.habilidades.length === 0) return
+      y = renderSeccion(pdf, e.competencias.toUpperCase(), y, color, fuenteBase)
+      pdf.setFont(fuenteBase, "normal")
+      pdf.setFontSize(10)
+      setColor(82, 82, 91)
+      const texto = datos.habilidades.join("  ·  ")
+      const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
+      escribirLineas(lines, 4)
+      y += 4
+    },
+    idiomas: () => {
+      if (datos.idiomas.length === 0) return
+      y = renderSeccion(pdf, e.idiomas.toUpperCase(), y, color, fuenteBase)
+      pdf.setFont(fuenteBase, "normal")
+      pdf.setFontSize(10)
+      setColor(82, 82, 91)
+      const texto = datos.idiomas
+        .map((i) => `${i.nombre || e.idioma} (${i.nivel})`)
+        .join("  ·  ")
+      const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
+      escribirLineas(lines, 4)
+      y += 4
+    },
+    referencias: () => {
+      if (datos.referencias.length === 0) return
+      y = renderSeccion(pdf, e.referencias.toUpperCase(), y, color, fuenteBase)
+      for (const ref of datos.referencias) {
+        checkPage(16)
+
+        pdf.setFont(fuenteBase, "bold")
+        pdf.setFontSize(10)
+        setBlack()
+        pdf.text(ref.nombre || e.nombre, MARGIN, y)
+        y += 4
+
+        const cargoEmpresa = [ref.cargo, ref.empresa].filter(Boolean).join(" · ")
+        if (cargoEmpresa) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setColor(82, 82, 91)
+          pdf.text(cargoEmpresa, MARGIN, y)
+          y += 4
+        }
+
+        if (ref.relacion) {
+          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(ref.relacion, MARGIN, y)
+          y += 4
+        }
+
+        const contactoRef = [ref.email, ref.telefono].filter(Boolean).join("  ·  ")
+        if (contactoRef) {
+          pdf.setFont(fuenteBase, "normal")
+          pdf.setFontSize(9)
+          setMuted()
+          pdf.text(contactoRef, MARGIN, y)
+          y += 4
+        }
+
+        y += 2
+      }
+    },
+  }
+
+  const orden = personalizacion.ordenSecciones ?? ORDEN_SECCIONES_INICIAL
+  for (const id of orden) {
+    renderers[id]()
+  }
+
+  // --- Informacion adicional (disponibilidad / pretensiones) ---
+  if (datos.disponibilidad || datos.pretensionesRenta) {
+    checkPage(12)
+    y += 3
+    pdf.setDrawColor(220, 220, 220)
+    pdf.setLineWidth(0.2)
+    pdf.line(MARGIN, y, PAGE_WIDTH - MARGIN, y)
+    y += 4
+
+    pdf.setFontSize(9)
+    if (datos.disponibilidad) {
+      const etiquetaDisp = `${e.disponibilidad}:`
+      pdf.setFont(fuenteBase, "bold")
+      setAccent()
+      pdf.text(etiquetaDisp, MARGIN, y)
+      const w = pdf.getTextWidth(`${etiquetaDisp} `)
+      pdf.setFont(fuenteBase, "normal")
+      setColor(82, 82, 91)
+      pdf.text(datos.disponibilidad, MARGIN + w, y)
+      y += 4
     }
-  }
-
-  // --- Habilidades ---
-  if (datos.habilidades.length > 0) {
-    y = renderSeccion(pdf, "COMPETENCIAS", y, color, fuenteBase)
-    pdf.setFont(fuenteBase, "normal")
-    pdf.setFontSize(10)
-    setColor(82, 82, 91)
-    const texto = datos.habilidades.join("  ·  ")
-    const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
-    checkPage(lines.length * 4)
-    pdf.text(lines, MARGIN, y)
-    y += lines.length * 4 + 4
-  }
-
-  // --- Idiomas ---
-  if (datos.idiomas.length > 0) {
-    y = renderSeccion(pdf, "IDIOMAS", y, color, fuenteBase)
-    pdf.setFont(fuenteBase, "normal")
-    pdf.setFontSize(10)
-    setColor(82, 82, 91)
-    const texto = datos.idiomas
-      .map((i) => `${i.nombre || "Idioma"} (${i.nivel})`)
-      .join("  ·  ")
-    const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
-    checkPage(lines.length * 4)
-    pdf.text(lines, MARGIN, y)
+    if (datos.pretensionesRenta) {
+      const etiquetaPret = `${e.pretensionRenta}:`
+      pdf.setFont(fuenteBase, "bold")
+      setAccent()
+      pdf.text(etiquetaPret, MARGIN, y)
+      const w = pdf.getTextWidth(`${etiquetaPret} `)
+      pdf.setFont(fuenteBase, "normal")
+      setColor(82, 82, 91)
+      pdf.text(datos.pretensionesRenta, MARGIN + w, y)
+      y += 4
+    }
   }
 
   const nombre = dp.nombreCompleto.trim().replace(/\s+/g, "_") || "curriculum"

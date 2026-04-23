@@ -23,7 +23,7 @@ export function FormExperiencia() {
         "Empieza cada logro con un verbo de acción: 'Implementé', 'Reduje', 'Lideré', 'Optimicé'.",
         "Cuantifica siempre que puedas: 'Reduje el tiempo de carga un 40%' es infinitamente mejor que 'Mejoré el rendimiento'.",
         "Ordena de más reciente a más antiguo — el reclutador lee de arriba para abajo.",
-        "No pongas 'referencias disponibles a pedido' — se da por sentado y ocupa espacio valioso.",
+        "Describe el impacto, no solo las tareas. 'Atendí clientes' vs 'Atendí 80+ clientes diarios manteniendo 95% de satisfacción'.",
       ]}
     >
       {experiencia.map((exp) => (
