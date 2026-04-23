@@ -205,31 +205,37 @@ async function generarPdfVisual(
 }
 
 /* Dibuja los circulos decorativos de Colorido:
-   - top-right en la pagina 1
-   - bottom-left en la ultima pagina
-   Ambos con el color del tema al ~10% de opacidad (simulada mezclando
-   con blanco, ya que el background detras de los circulos es white). */
+   - top-right en la pagina 1 (sobre el banner azul del header)
+   - bottom-left en la ultima pagina (sobre fondo blanco)
+   Usamos GState opacity 0.1 para matchear el opacity-10 del DOM. */
 function dibujarDecorativosColorido(pdf: jsPDF, personalizacion: Personalizacion) {
   const rgb = hexToRgb(getColorHex(personalizacion.color))
-  /* Mezcla alpha 0.1 sobre blanco: out = 0.9*255 + 0.1*color */
-  const r = Math.round(255 * 0.9 + rgb.r * 0.1)
-  const g = Math.round(255 * 0.9 + rgb.g * 0.1)
-  const b = Math.round(255 * 0.9 + rgb.b * 0.1)
-  pdf.setFillColor(r, g, b)
+  const pdfCompat = pdf as unknown as {
+    GState: (o: { opacity?: number }) => object
+    setGState: (g: object) => void
+  }
+  const gstateDim = pdfCompat.GState({ opacity: 0.1 })
+  const gstateFull = pdfCompat.GState({ opacity: 1 })
 
   const totalPaginas = pdf.getNumberOfPages()
 
-  /* Top-right en pagina 1.
-     En el DOM: w-32 (128px) con translate(30%, -30%) desde top-0 right-0.
-     Centro ≈ a 25.6px del right y 25.6px del top → ~6.8mm, radio ~16.9mm */
-  pdf.setPage(1)
-  pdf.circle(A4_WIDTH_MM - 6.8, 6.8, 16.9, "F")
+  /* Ambos circulos quedan mayormente fuera del viewport en el DOM por el
+     translate. La porcion VISIBLE es chica (~8-10mm). No replicamos el
+     diametro total sino el efecto visual. */
 
-  /* Bottom-left en la ultima pagina.
-     En el DOM: w-24 (96px) con translate(-30%, 30%) desde bottom-0 left-0.
-     Centro ≈ a 19.2px del left y 19.2px del bottom → ~5.1mm, radio ~12.7mm */
+  pdfCompat.setGState(gstateDim)
+  pdf.setFillColor(rgb.r, rgb.g, rgb.b)
+
+  /* Top-right: pelota tenue asomando por la esquina derecha del header */
+  pdf.setPage(1)
+  pdf.circle(A4_WIDTH_MM + 4, -4, 14, "F")
+
+  /* Bottom-left: pelota tenue asomando por la esquina inferior izquierda */
   pdf.setPage(totalPaginas)
-  pdf.circle(5.1, A4_HEIGHT_MM - 5.1, 12.7, "F")
+  pdf.circle(-4, A4_HEIGHT_MM + 4, 10, "F")
+
+  /* Reset para no afectar operaciones posteriores */
+  pdfCompat.setGState(gstateFull)
 }
 
 /* Cuenta pixeles cercanos al blanco por fila del canvas, pero SOLO en la
