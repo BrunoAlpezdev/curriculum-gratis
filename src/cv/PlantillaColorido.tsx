@@ -253,9 +253,12 @@ export function PlantillaColorido({ datos, personalizacion }: Props) {
 
   return (
     <div className="flex-1 flex flex-col text-[12px] leading-snug relative overflow-hidden">
-      {/* Formas decorativas de fondo */}
-      <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10" style={{ backgroundColor: color, transform: "translate(30%, -30%)" }} />
-      <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full opacity-10" style={{ backgroundColor: color, transform: "translate(-30%, 30%)" }} />
+      {/* Formas decorativas de fondo. data-decorativo se usa en la generacion
+          del PDF para ocultarlas en la captura y redibujarlas en las posiciones
+          correctas por pagina (la bottom-left va al fondo de la ULTIMA pagina
+          del PDF, no al fin del contenido). */}
+      <div data-decorativo="top-right" className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10" style={{ backgroundColor: color, transform: "translate(30%, -30%)" }} />
+      <div data-decorativo="bottom-left" className="absolute bottom-0 left-0 w-24 h-24 rounded-full opacity-10" style={{ backgroundColor: color, transform: "translate(-30%, 30%)" }} />
 
       {/* Header */}
       <div

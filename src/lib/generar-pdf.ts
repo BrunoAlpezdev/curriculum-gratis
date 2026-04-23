@@ -72,6 +72,13 @@ async function generarPdfVisual(
       elClonado.style.minHeight = `${A4_HEIGHT_PX}px`
       elClonado.style.transform = "none"
 
+      /* Ocultamos decorativos — los dibujamos despues con jsPDF en las
+         posiciones correctas por pagina (el bottom-left debe quedar al
+         fondo de la ULTIMA pagina del PDF, no al fin del contenido). */
+      elClonado.querySelectorAll("[data-decorativo]").forEach((nodo) => {
+        ;(nodo as HTMLElement).style.display = "none"
+      })
+
       let ancestro: HTMLElement | null = elClonado.parentElement
       while (ancestro) {
         ancestro.style.transform = "none"
@@ -188,8 +195,41 @@ async function generarPdfVisual(
     }
   }
 
+  /* Decorativos de Colorido: redibujar en posiciones fijas por pagina */
+  if (personalizacion.plantilla === "colorido") {
+    dibujarDecorativosColorido(pdf, personalizacion)
+  }
+
   const nombre = nombreCompleto.trim().replace(/\s+/g, "_") || "curriculum"
   pdf.save(`${nombre}_CV.pdf`)
+}
+
+/* Dibuja los circulos decorativos de Colorido:
+   - top-right en la pagina 1
+   - bottom-left en la ultima pagina
+   Ambos con el color del tema al ~10% de opacidad (simulada mezclando
+   con blanco, ya que el background detras de los circulos es white). */
+function dibujarDecorativosColorido(pdf: jsPDF, personalizacion: Personalizacion) {
+  const rgb = hexToRgb(getColorHex(personalizacion.color))
+  /* Mezcla alpha 0.1 sobre blanco: out = 0.9*255 + 0.1*color */
+  const r = Math.round(255 * 0.9 + rgb.r * 0.1)
+  const g = Math.round(255 * 0.9 + rgb.g * 0.1)
+  const b = Math.round(255 * 0.9 + rgb.b * 0.1)
+  pdf.setFillColor(r, g, b)
+
+  const totalPaginas = pdf.getNumberOfPages()
+
+  /* Top-right en pagina 1.
+     En el DOM: w-32 (128px) con translate(30%, -30%) desde top-0 right-0.
+     Centro ≈ a 25.6px del right y 25.6px del top → ~6.8mm, radio ~16.9mm */
+  pdf.setPage(1)
+  pdf.circle(A4_WIDTH_MM - 6.8, 6.8, 16.9, "F")
+
+  /* Bottom-left en la ultima pagina.
+     En el DOM: w-24 (96px) con translate(-30%, 30%) desde bottom-0 left-0.
+     Centro ≈ a 19.2px del left y 19.2px del bottom → ~5.1mm, radio ~12.7mm */
+  pdf.setPage(totalPaginas)
+  pdf.circle(5.1, A4_HEIGHT_MM - 5.1, 12.7, "F")
 }
 
 /* Cuenta pixeles cercanos al blanco por fila del canvas, pero SOLO en la
