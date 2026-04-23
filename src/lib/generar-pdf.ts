@@ -72,14 +72,6 @@ async function generarPdfVisual(
       elClonado.style.minHeight = `${A4_HEIGHT_PX}px`
       elClonado.style.transform = "none"
 
-      /* Removemos decorativos del DOM clonado — los dibujamos despues con
-         jsPDF en las posiciones correctas por pagina. Usamos remove() en vez
-         de display:none porque html2canvas-pro a veces igual captura elementos
-         ocultados por CSS cuando tienen position:absolute. */
-      elClonado.querySelectorAll("[data-decorativo]").forEach((nodo) => {
-        nodo.remove()
-      })
-
       let ancestro: HTMLElement | null = elClonado.parentElement
       while (ancestro) {
         ancestro.style.transform = "none"
@@ -196,55 +188,8 @@ async function generarPdfVisual(
     }
   }
 
-  /* Decorativos de Colorido: redibujar en posiciones fijas por pagina */
-  if (personalizacion.plantilla === "colorido") {
-    dibujarDecorativosColorido(pdf, personalizacion)
-  }
-
   const nombre = nombreCompleto.trim().replace(/\s+/g, "_") || "curriculum"
   pdf.save(`${nombre}_CV.pdf`)
-}
-
-/* Dibuja los circulos decorativos de Colorido:
-   - top-right en la pagina 1 (sobre el banner azul del header)
-   - bottom-left en la ultima pagina (sobre fondo blanco)
-   Usamos GState opacity 0.1 para matchear el opacity-10 del DOM. */
-function dibujarDecorativosColorido(pdf: jsPDF, personalizacion: Personalizacion) {
-  const rgb = hexToRgb(getColorHex(personalizacion.color))
-  const pdfCompat = pdf as unknown as {
-    GState: (o: { opacity?: number }) => object
-    setGState: (g: object) => void
-  }
-  const gstateDim = pdfCompat.GState({ opacity: 0.1 })
-  const gstateFull = pdfCompat.GState({ opacity: 1 })
-
-  const totalPaginas = pdf.getNumberOfPages()
-
-  /* Ambos circulos quedan mayormente fuera del viewport en el DOM por el
-     translate. La porcion VISIBLE es chica (~8-10mm). No replicamos el
-     diametro total sino el efecto visual. */
-
-  pdfCompat.setGState(gstateDim)
-  pdf.setFillColor(rgb.r, rgb.g, rgb.b)
-
-  /* Top-right: pelota tenue del color del tema, asomando por la esquina
-     derecha del header */
-  pdf.setPage(1)
-  pdf.circle(A4_WIDTH_MM + 4, -4, 14, "F")
-
-  /* Bottom-left: pelota tenue asomando por la esquina inferior izquierda */
-  pdf.setPage(totalPaginas)
-  pdf.circle(-4, A4_HEIGHT_MM + 4, 10, "F")
-
-  /* Decorativo blanco interior del header (top-right del banner).
-     En el DOM: w-40 (160px) con translate(20%, -50%) → centro ~(W-48px, 0),
-     radio ~80px ≈ 21mm. */
-  pdf.setFillColor(255, 255, 255)
-  pdf.setPage(1)
-  pdf.circle(A4_WIDTH_MM - 12.7, 0, 21, "F")
-
-  /* Reset para no afectar operaciones posteriores */
-  pdfCompat.setGState(gstateFull)
 }
 
 /* Cuenta pixeles cercanos al blanco por fila del canvas, pero SOLO en la
