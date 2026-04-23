@@ -5,7 +5,12 @@ import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
 import { useCurriculumStore } from "@/lib/store"
 import { COLORES_TEMA, PLANTILLAS, FUENTES, FUENTE_CSS } from "@/lib/constantes"
 import { cn } from "@/components/ui/cn"
-import type { ColorTema, PlantillaId, FuenteId } from "@/types"
+import type { ColorTema, PlantillaId, FuenteId, IdiomaCv } from "@/types"
+
+const IDIOMAS_CV: { valor: IdiomaCv; etiqueta: string; descripcion: string }[] = [
+  { valor: "es", etiqueta: "Español", descripcion: "CV en español" },
+  { valor: "en", etiqueta: "English", descripcion: "CV in English" },
+]
 
 export function FormPersonalizacion() {
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
@@ -20,8 +25,31 @@ export function FormPersonalizacion() {
         "Color: azul o negro para roles corporativos, finanzas, derecho. Colores más fuertes si postulas a diseño o creatividad.",
         "Fuente: las Serif (con remates) van bien para roles clásicos. Las Sans-serif son más modernas y van mejor para tech.",
         "Menos es más — un CV recargado visualmente distrae. El contenido tiene que ser la estrella, no el diseño.",
+        "Idioma: cambia solo los títulos de las secciones. Tus datos los tienes que escribir tú en el idioma del país al que postulas.",
       ]}
     >
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Idioma del CV</label>
+        <div className="grid grid-cols-2 gap-2">
+          {IDIOMAS_CV.map((i) => (
+            <button
+              key={i.valor}
+              type="button"
+              onClick={() => set({ idiomaCv: i.valor })}
+              className={cn(
+                "rounded-lg border p-2.5 text-left transition-all cursor-pointer",
+                (personalizacion.idiomaCv ?? "es") === i.valor
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950 ring-1 ring-blue-500"
+                  : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+              )}
+            >
+              <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{i.etiqueta}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{i.descripcion}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Plantilla</label>
         <div className="grid grid-cols-2 gap-2">

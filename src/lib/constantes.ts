@@ -56,6 +56,7 @@ export const PERSONALIZACION_INICIAL: Personalizacion = {
   color: "azul",
   plantilla: "moderno",
   fuente: "inter",
+  idiomaCv: "es",
 }
 
 export const DATOS_INICIALES: DatosCurriculum = {
@@ -68,6 +69,7 @@ export const DATOS_INICIALES: DatosCurriculum = {
     linkedin: "",
     github: "",
     sitioWeb: "",
+    foto: "",
   },
   perfil: "",
   experiencia: [],

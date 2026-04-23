@@ -1,6 +1,7 @@
 import type { DatosCurriculum, Personalizacion } from "@/types"
 import { getColorHex } from "@/lib/colores"
 import { formatearRangoFechas, formatearFechaEducacion, formatearFecha } from "@/lib/formato"
+import { etiquetasCv } from "@/lib/etiquetas-cv"
 
 interface Props {
   datos: DatosCurriculum
@@ -10,13 +11,14 @@ interface Props {
 export function PlantillaClasico({ datos, personalizacion }: Props) {
   const color = getColorHex(personalizacion.color)
   const { datosPersonales: dp } = datos
+  const e = etiquetasCv(personalizacion.idiomaCv)
 
   return (
     <div className="px-10 py-8 flex-1 text-[12px] leading-snug">
       {/* Header centrado estilo Harvard */}
       <div className="text-center mb-4 pb-3 border-b-2" style={{ borderColor: color }}>
         <h1 className="text-[22px] font-bold text-zinc-900">
-          {dp.nombreCompleto || "Tu Nombre"}
+          {dp.nombreCompleto || e.tuNombre}
         </h1>
         {dp.titulo && (
           <p className="text-[13px] text-zinc-600 mt-0.5">{dp.titulo}</p>
@@ -39,7 +41,7 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Perfil Profesional
+            {e.perfilProfesional}
           </h2>
           <p className="text-zinc-600 whitespace-pre-line">{datos.perfil}</p>
         </div>
@@ -51,14 +53,14 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Experiencia Laboral
+            {e.experienciaLaboral}
           </h2>
           <div className="flex flex-col gap-2.5">
             {datos.experiencia.map((exp) => (
               <div key={exp.id}>
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-bold text-zinc-800">
-                    {exp.cargo || "Cargo"}{exp.empresa ? `, ${exp.empresa}` : ""}
+                    {exp.cargo || e.cargo}{exp.empresa ? `, ${exp.empresa}` : ""}
                   </h3>
                   <span className="text-[11px] text-zinc-500 shrink-0 ml-2">
                     {formatearRangoFechas(exp.fechaInicio, exp.fechaFin)}
@@ -71,7 +73,7 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
                   <p className="text-zinc-600 mt-0.5 whitespace-pre-line">{exp.descripcion}</p>
                 )}
                 {exp.logros && (
-                  <p className="text-zinc-700 mt-0.5 italic text-[11px]">Logros: {exp.logros}</p>
+                  <p className="text-zinc-700 mt-0.5 italic text-[11px]">{e.logros}: {exp.logros}</p>
                 )}
               </div>
             ))}
@@ -85,14 +87,14 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Educacion
+            {e.educacion}
           </h2>
           <div className="flex flex-col gap-2">
             {datos.educacion.map((edu) => (
               <div key={edu.id}>
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-bold text-zinc-800">
-                    {edu.titulo || "Titulo"}{edu.institucion ? `, ${edu.institucion}` : ""}
+                    {edu.titulo || e.titulo}{edu.institucion ? `, ${edu.institucion}` : ""}
                   </h3>
                   <span className="text-[11px] text-zinc-500 shrink-0 ml-2">
                     {formatearFechaEducacion(edu.fechaInicio, edu.fechaFin)}
@@ -113,14 +115,14 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Cursos y Certificaciones
+            {e.cursosCertificaciones}
           </h2>
           <div className="flex flex-col gap-1.5">
             {datos.cursos.map((curso) => (
               <div key={curso.id}>
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-bold text-zinc-800">
-                    {curso.nombre || "Curso"}
+                    {curso.nombre || e.curso}
                     {curso.institucion && (
                       <span className="font-normal text-zinc-600">
                         , {curso.institucion}
@@ -148,14 +150,14 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Proyectos
+            {e.proyectos}
           </h2>
           <div className="flex flex-col gap-2">
             {datos.proyectos.map((p) => (
               <div key={p.id}>
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-bold text-zinc-800">
-                    {p.nombre || "Proyecto"}
+                    {p.nombre || e.proyecto}
                   </h3>
                   {p.url && (
                     <span className="text-[11px] text-zinc-500 italic shrink-0 ml-2">
@@ -185,7 +187,7 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Competencias
+            {e.competencias}
           </h2>
           <div className="flex flex-wrap gap-2">
             {datos.habilidades.map((h) => (
@@ -206,12 +208,12 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Idiomas
+            {e.idiomas}
           </h2>
           <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-zinc-700">
             {datos.idiomas.map((i) => (
               <span key={i.id}>
-                {i.nombre || "Idioma"}{" "}
+                {i.nombre || e.idioma}{" "}
                 <span className="capitalize text-zinc-500">({i.nivel})</span>
               </span>
             ))}
@@ -225,12 +227,12 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
             className="text-[12px] font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b"
             style={{ color, borderColor: color }}
           >
-            Referencias
+            {e.referencias}
           </h2>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
             {datos.referencias.map((ref) => (
               <div key={ref.id}>
-                <p className="font-bold text-zinc-800">{ref.nombre || "Nombre"}</p>
+                <p className="font-bold text-zinc-800">{ref.nombre || e.nombre}</p>
                 {(ref.cargo || ref.empresa) && (
                   <p className="text-zinc-600 text-[11px]">
                     {ref.cargo}
@@ -255,13 +257,13 @@ export function PlantillaClasico({ datos, personalizacion }: Props) {
         <div className="mt-3 pt-2 border-t border-zinc-200 text-[11px] text-zinc-600 flex flex-wrap gap-x-5 gap-y-1">
           {datos.disponibilidad && (
             <span>
-              <span className="font-semibold" style={{ color }}>Disponibilidad:</span>{" "}
+              <span className="font-semibold" style={{ color }}>{e.disponibilidad}:</span>{" "}
               {datos.disponibilidad}
             </span>
           )}
           {datos.pretensionesRenta && (
             <span>
-              <span className="font-semibold" style={{ color }}>Pretension de renta:</span>{" "}
+              <span className="font-semibold" style={{ color }}>{e.pretensionRenta}:</span>{" "}
               {datos.pretensionesRenta}
             </span>
           )}

@@ -163,6 +163,7 @@ function generarDatosMock(): DatosCurriculum {
       linkedin: `linkedin.com/in/${perfil.nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "-")}`,
       github: "",
       sitioWeb: "",
+      foto: "",
     },
     perfil: perfil.perfil,
     experiencia: [
@@ -247,6 +248,7 @@ const DATOS_EJEMPLO: DatosCurriculum = {
     linkedin: "linkedin.com/in/brunoalpezdev",
     github: "github.com/BrunoAlpezdev",
     sitioWeb: "",
+    foto: "",
   },
   perfil:
     "Ingeniero en Informatica con experiencia en automatizacion, analisis de datos y reestructuracion de procesos complejos. Especializado en Tecnologias Web y Python para automatizaciones, optimizacion de procesos y generacion de herramientas internas orientadas a operaciones y toma de decisiones. Experiencia previa en liderazgo tecnico y modernizacion de sistemas internos.",

@@ -9,6 +9,7 @@ export interface DatosPersonales {
   linkedin: string
   github: string
   sitioWeb: string
+  foto: string
 }
 
 export interface Experiencia {
@@ -94,8 +95,11 @@ export type PlantillaId = "clasico" | "moderno" | "colorido" | "minimalista"
 
 export type FuenteId = "inter" | "roboto" | "lato" | "merriweather" | "libre-baskerville"
 
+export type IdiomaCv = "es" | "en"
+
 export interface Personalizacion {
   color: ColorTema
   plantilla: PlantillaId
   fuente: FuenteId
+  idiomaCv: IdiomaCv
 }
