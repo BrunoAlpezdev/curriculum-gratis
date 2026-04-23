@@ -36,8 +36,10 @@ async function generarPdfVisual(nombreCompleto: string) {
      truncaba CVs largos a la primera pagina. */
   const alturaReal = Math.max(el.offsetHeight, A4_HEIGHT_PX)
 
+  /* scale 4 ≈ 382 DPI — calidad print. Aumentar mas reventaria memoria del browser
+     en CVs multipagina (canvas = 794*4 x 1123*4*N px) */
   const canvas = await html2canvas(el, {
-    scale: 3,
+    scale: 4,
     useCORS: true,
     backgroundColor: "#ffffff",
     windowWidth: A4_WIDTH_PX,
@@ -67,19 +69,22 @@ async function generarPdfVisual(nombreCompleto: string) {
     },
   })
 
-  const imgData = canvas.toDataURL("image/jpeg", 0.95)
-  const pdf = new jsPDF("p", "mm", "a4")
+  /* PNG preserva texto nitido (JPEG generaba halos alrededor de cada letra).
+     compress: true en jsPDF aplica deflate al PNG antes de embeberlo,
+     asi que el peso final queda razonable aunque PNG pese mas en memoria. */
+  const imgData = canvas.toDataURL("image/png")
+  const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true })
 
   const imgWidth = A4_WIDTH_MM
   const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width
 
   if (imgHeight <= A4_HEIGHT_MM + A4_TOLERANCIA_MM) {
-    pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, A4_HEIGHT_MM)
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, A4_HEIGHT_MM, undefined, "FAST")
   } else {
     let posY = 0
     while (posY < imgHeight) {
       if (posY > 0) pdf.addPage()
-      pdf.addImage(imgData, "JPEG", 0, -posY, imgWidth, imgHeight)
+      pdf.addImage(imgData, "PNG", 0, -posY, imgWidth, imgHeight, undefined, "FAST")
       posY += A4_HEIGHT_MM
     }
   }
