@@ -31,14 +31,19 @@ async function generarPdfVisual(nombreCompleto: string) {
   const el = document.getElementById("curriculum-pdf")
   if (!el) return
 
+  /* Si el contenido excede una pagina, usamos la altura real del elemento.
+     html2canvas recorta al valor de `height`, asi que fijarlo en A4_HEIGHT_PX
+     truncaba CVs largos a la primera pagina. */
+  const alturaReal = Math.max(el.offsetHeight, A4_HEIGHT_PX)
+
   const canvas = await html2canvas(el, {
     scale: 3,
     useCORS: true,
     backgroundColor: "#ffffff",
     windowWidth: A4_WIDTH_PX,
-    windowHeight: A4_HEIGHT_PX,
+    windowHeight: alturaReal,
     width: A4_WIDTH_PX,
-    height: A4_HEIGHT_PX,
+    height: alturaReal,
     onclone: (_doc: Document, elClonado: HTMLElement) => {
       /* Forzar dimensiones exactas A4 en el clon para que
          no dependa del layout del padre ni del DPI del device */
@@ -46,6 +51,7 @@ async function generarPdfVisual(nombreCompleto: string) {
       elClonado.style.minWidth = `${A4_WIDTH_PX}px`
       elClonado.style.maxWidth = `${A4_WIDTH_PX}px`
       elClonado.style.minHeight = `${A4_HEIGHT_PX}px`
+      elClonado.style.height = `${alturaReal}px`
       elClonado.style.transform = "none"
       elClonado.style.position = "absolute"
       elClonado.style.top = "0"
