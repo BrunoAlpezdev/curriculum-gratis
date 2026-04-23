@@ -226,13 +226,21 @@ function dibujarDecorativosColorido(pdf: jsPDF, personalizacion: Personalizacion
   pdfCompat.setGState(gstateDim)
   pdf.setFillColor(rgb.r, rgb.g, rgb.b)
 
-  /* Top-right: pelota tenue asomando por la esquina derecha del header */
+  /* Top-right: pelota tenue del color del tema, asomando por la esquina
+     derecha del header */
   pdf.setPage(1)
   pdf.circle(A4_WIDTH_MM + 4, -4, 14, "F")
 
   /* Bottom-left: pelota tenue asomando por la esquina inferior izquierda */
   pdf.setPage(totalPaginas)
   pdf.circle(-4, A4_HEIGHT_MM + 4, 10, "F")
+
+  /* Decorativo blanco interior del header (top-right del banner).
+     En el DOM: w-40 (160px) con translate(20%, -50%) → centro ~(W-48px, 0),
+     radio ~80px ≈ 21mm. */
+  pdf.setFillColor(255, 255, 255)
+  pdf.setPage(1)
+  pdf.circle(A4_WIDTH_MM - 12.7, 0, 21, "F")
 
   /* Reset para no afectar operaciones posteriores */
   pdfCompat.setGState(gstateFull)

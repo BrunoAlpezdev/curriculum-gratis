@@ -265,7 +265,7 @@ export function PlantillaColorido({ datos, personalizacion }: Props) {
         className="px-7 py-5 text-white relative overflow-hidden"
         style={{ backgroundColor: color }}
       >
-        <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-10 bg-white" style={{ transform: "translate(20%, -50%)" }} />
+        <div data-decorativo="header-white" className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-10 bg-white" style={{ transform: "translate(20%, -50%)" }} />
         <div className="relative flex items-center gap-4">
           {dp.foto && (
             // eslint-disable-next-line @next/next/no-img-element
