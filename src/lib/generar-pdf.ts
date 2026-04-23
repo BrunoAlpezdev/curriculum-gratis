@@ -74,17 +74,34 @@ async function generarPdfVisual(nombreCompleto: string) {
     const imgData = canvas.toDataURL("image/png")
     pdf.addImage(imgData, "PNG", 0, 0, imgWidth, A4_HEIGHT_MM, undefined, "FAST")
   } else {
-    /* Multi-pagina: recortamos el canvas en slices de altura A4 y
-       embebemos cada uno por separado. Evita depender de PDF viewers
-       para clipear una imagen gigante que se extiende mas alla de la pagina. */
+    /* Multi-pagina con cortes inteligentes.
+       En vez de partir al multiplo exacto de A4 (lo que corta titulos y
+       parrafos a la mitad), buscamos la fila con mas pixeles blancos
+       dentro de un rango cerca del corte ideal. Eso hace que los cortes
+       caigan en los "huecos" naturales entre secciones. */
     const pxPorMm = canvas.width / A4_WIDTH_MM
-    const altoSliceCanvasPx = A4_HEIGHT_MM * pxPorMm
+    const altoPaginaPx = A4_HEIGHT_MM * pxPorMm
+    const RANGO_BUSQUEDA_PX = Math.round(altoPaginaPx * 0.18) // ~18% de la pagina
+
+    const ctxOrig = canvas.getContext("2d", { willReadFrequently: true })
+    const scoresBlanco = ctxOrig ? calcularBlancosPorFila(ctxOrig, canvas) : null
+
     let offsetPx = 0
     let paginaIdx = 0
 
     while (offsetPx < canvas.height - 2) {
       const altoRestante = canvas.height - offsetPx
-      const alturaEstaSlice = Math.min(altoSliceCanvasPx, altoRestante)
+      let alturaEstaSlice: number
+
+      if (altoRestante <= altoPaginaPx) {
+        alturaEstaSlice = altoRestante
+      } else {
+        const corteIdeal = offsetPx + altoPaginaPx
+        const corteAjustado = scoresBlanco
+          ? mejorCorte(scoresBlanco, corteIdeal, RANGO_BUSQUEDA_PX, offsetPx + altoPaginaPx * 0.6)
+          : corteIdeal
+        alturaEstaSlice = corteAjustado - offsetPx
+      }
 
       const sliceCanvas = document.createElement("canvas")
       sliceCanvas.width = canvas.width
@@ -104,11 +121,69 @@ async function generarPdfVisual(nombreCompleto: string) {
       const sliceAltoMm = alturaEstaSlice / pxPorMm
       pdf.addImage(sliceData, "PNG", 0, 0, imgWidth, sliceAltoMm, undefined, "FAST")
 
-      offsetPx += altoSliceCanvasPx
+      offsetPx += alturaEstaSlice
       paginaIdx += 1
     }
   }
 
   const nombre = nombreCompleto.trim().replace(/\s+/g, "_") || "curriculum"
   pdf.save(`${nombre}_CV.pdf`)
+}
+
+/* Cuenta pixeles cercanos al blanco por fila del canvas.
+   Una fila con muchos pixeles blancos es un buen candidato a corte
+   porque significa que hay espacio entre elementos (gap entre secciones). */
+function calcularBlancosPorFila(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+): Uint32Array {
+  const { width, height } = canvas
+  const scores = new Uint32Array(height)
+  /* Leemos en chunks para no crashear con canvases gigantes */
+  const CHUNK_FILAS = 512
+  for (let yInicio = 0; yInicio < height; yInicio += CHUNK_FILAS) {
+    const altoChunk = Math.min(CHUNK_FILAS, height - yInicio)
+    const img = ctx.getImageData(0, yInicio, width, altoChunk)
+    const data = img.data
+    for (let fila = 0; fila < altoChunk; fila++) {
+      let blancos = 0
+      const offsetFila = fila * width * 4
+      for (let col = 0; col < width; col++) {
+        const i = offsetFila + col * 4
+        if (data[i]! >= 240 && data[i + 1]! >= 240 && data[i + 2]! >= 240) {
+          blancos++
+        }
+      }
+      scores[yInicio + fila] = blancos
+    }
+  }
+  return scores
+}
+
+/* Encuentra la fila con mas pixeles blancos en [ideal - rango, ideal + rango],
+   con restriccion de un minimo (para evitar paginas demasiado cortas).
+   Prefiere cortes cerca del ideal si los scores son similares. */
+function mejorCorte(
+  scoresBlanco: Uint32Array,
+  corteIdeal: number,
+  rango: number,
+  minimo: number,
+): number {
+  const inicio = Math.max(Math.round(minimo), corteIdeal - rango)
+  const fin = Math.min(scoresBlanco.length - 1, corteIdeal + rango)
+  if (inicio >= fin) return corteIdeal
+
+  let mejor = corteIdeal
+  let mejorPuntaje = -Infinity
+
+  for (let y = inicio; y <= fin; y++) {
+    /* Ligera penalidad por distancia al ideal, para desempatar */
+    const distancia = Math.abs(y - corteIdeal)
+    const puntaje = (scoresBlanco[y] ?? 0) - distancia * 0.5
+    if (puntaje > mejorPuntaje) {
+      mejorPuntaje = puntaje
+      mejor = y
+    }
+  }
+  return mejor
 }
