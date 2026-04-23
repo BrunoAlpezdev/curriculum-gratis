@@ -47,6 +47,17 @@ export function generarPdfAts(
     setColor(113, 113, 122)
   }
 
+  /* Escribe cada linea con un checkPage entre medio para que
+     bloques largos (perfil, descripciones) salten correctamente
+     de pagina en vez de overflowear al borde inferior. */
+  function escribirLineas(lineas: string[], altoLinea: number) {
+    for (const linea of lineas) {
+      checkPage(altoLinea)
+      pdf.text(linea, MARGIN, y)
+      y += altoLinea
+    }
+  }
+
   // --- Header ---
   const dp = datos.datosPersonales
 
@@ -95,9 +106,8 @@ export function generarPdfAts(
     pdf.setFontSize(10)
     setMuted()
     const lines = pdf.splitTextToSize(datos.perfil, CONTENT_WIDTH)
-    checkPage(lines.length * 4)
-    pdf.text(lines, MARGIN, y)
-    y += lines.length * 4 + 4
+    escribirLineas(lines, 4)
+    y += 4
   }
 
   const renderers: Record<SeccionOrdenable, () => void> = {
@@ -135,9 +145,8 @@ export function generarPdfAts(
           pdf.setFontSize(9)
           setColor(82, 82, 91)
           const lines = pdf.splitTextToSize(exp.descripcion, CONTENT_WIDTH)
-          checkPage(lines.length * 3.5)
-          pdf.text(lines, MARGIN, y)
-          y += lines.length * 3.5 + 1
+          escribirLineas(lines, 3.5)
+          y += 1
         }
 
         if (exp.logros) {
@@ -145,9 +154,8 @@ export function generarPdfAts(
           pdf.setFontSize(9)
           setAccent()
           const lines = pdf.splitTextToSize(`${e.logros}: ${exp.logros}`, CONTENT_WIDTH)
-          checkPage(lines.length * 3.5)
-          pdf.text(lines, MARGIN, y)
-          y += lines.length * 3.5 + 1
+          escribirLineas(lines, 3.5)
+          y += 1
         }
 
         y += 2
@@ -186,8 +194,8 @@ export function generarPdfAts(
           pdf.setFontSize(9)
           setColor(82, 82, 91)
           const lines = pdf.splitTextToSize(edu.descripcion, CONTENT_WIDTH)
-          pdf.text(lines, MARGIN, y)
-          y += lines.length * 3.5 + 1
+          escribirLineas(lines, 3.5)
+          y += 1
         }
 
         y += 2
@@ -264,9 +272,8 @@ export function generarPdfAts(
           pdf.setFontSize(9)
           setColor(82, 82, 91)
           const lines = pdf.splitTextToSize(p.descripcion, CONTENT_WIDTH)
-          checkPage(lines.length * 3.5)
-          pdf.text(lines, MARGIN, y)
-          y += lines.length * 3.5 + 1
+          escribirLineas(lines, 3.5)
+          y += 1
         }
 
         y += 2
@@ -280,9 +287,8 @@ export function generarPdfAts(
       setColor(82, 82, 91)
       const texto = datos.habilidades.join("  ·  ")
       const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
-      checkPage(lines.length * 4)
-      pdf.text(lines, MARGIN, y)
-      y += lines.length * 4 + 4
+      escribirLineas(lines, 4)
+      y += 4
     },
     idiomas: () => {
       if (datos.idiomas.length === 0) return
@@ -294,9 +300,8 @@ export function generarPdfAts(
         .map((i) => `${i.nombre || e.idioma} (${i.nivel})`)
         .join("  ·  ")
       const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
-      checkPage(lines.length * 4)
-      pdf.text(lines, MARGIN, y)
-      y += lines.length * 4 + 4
+      escribirLineas(lines, 4)
+      y += 4
     },
     referencias: () => {
       if (datos.referencias.length === 0) return

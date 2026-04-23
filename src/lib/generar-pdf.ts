@@ -36,6 +36,16 @@ async function generarPdfVisual(nombreCompleto: string) {
      se queda corto — scrollHeight es mas robusto para medir el contenido real. */
   const alturaContenido = Math.max(el.scrollHeight, el.offsetHeight, A4_HEIGHT_PX)
 
+  /* Medimos posicion (top) de cada h2 relativo al root en CSS px.
+     Sirve como "cortes limpios" preferidos al paginar — cortar justo
+     antes de un h2 deja la seccion entera en la pagina siguiente. */
+  const rootRect = el.getBoundingClientRect()
+  const posicionesH2Css: number[] = []
+  el.querySelectorAll("h2").forEach((h2) => {
+    const r = (h2 as HTMLElement).getBoundingClientRect()
+    posicionesH2Css.push(r.top - rootRect.top)
+  })
+
   const canvas = await html2canvas(el, {
     scale: 3,
     useCORS: true,
@@ -75,13 +85,23 @@ async function generarPdfVisual(nombreCompleto: string) {
     pdf.addImage(imgData, "PNG", 0, 0, imgWidth, A4_HEIGHT_MM, undefined, "FAST")
   } else {
     /* Multi-pagina con cortes inteligentes.
-       En vez de partir al multiplo exacto de A4 (lo que corta titulos y
-       parrafos a la mitad), buscamos la fila con mas pixeles blancos
-       dentro de un rango cerca del corte ideal. Eso hace que los cortes
-       caigan en los "huecos" naturales entre secciones. */
+       Prioridad: cortar justo antes de un h2 (cortes limpios entre secciones),
+       sino cortar en la fila con mas pixeles blancos (gap natural entre items),
+       sino cortar exacto en A4 como ultimo recurso. Nunca pasamos A4 para
+       evitar que contenido overflowee fuera de la pagina. */
     const pxPorMm = canvas.width / A4_WIDTH_MM
     const altoPaginaPx = A4_HEIGHT_MM * pxPorMm
-    const RANGO_BUSQUEDA_PX = Math.round(altoPaginaPx * 0.18) // ~18% de la pagina
+    /* Umbral minimo: cortes que dejan la pagina al menos al 70% lleno */
+    const MIN_PAGINA_RATIO = 0.7
+
+    /* Convertir posiciones h2 de CSS px a canvas px.
+       Los positions fueron medidos en el DOM original antes del capture;
+       el canvas tiene height = alturaContenido * scale, asi que el factor
+       de conversion es canvas.height / alturaContenido. */
+    const cssACanvas = canvas.height / alturaContenido
+    const posicionesH2Canvas = posicionesH2Css
+      .map((p) => p * cssACanvas)
+      .filter((p) => p > 0) // ignorar el primer h2 si esta al tope
 
     const ctxOrig = canvas.getContext("2d", { willReadFrequently: true })
     const scoresBlanco = ctxOrig ? calcularBlancosPorFila(ctxOrig, canvas) : null
@@ -97,10 +117,24 @@ async function generarPdfVisual(nombreCompleto: string) {
         alturaEstaSlice = altoRestante
       } else {
         const corteIdeal = offsetPx + altoPaginaPx
-        const corteAjustado = scoresBlanco
-          ? mejorCorte(scoresBlanco, corteIdeal, RANGO_BUSQUEDA_PX, offsetPx + altoPaginaPx * 0.6)
-          : corteIdeal
-        alturaEstaSlice = corteAjustado - offsetPx
+        const corteMinimo = offsetPx + altoPaginaPx * MIN_PAGINA_RATIO
+
+        /* 1. Cortar antes de un h2 si hay uno en el rango */
+        const candidatosH2 = posicionesH2Canvas.filter(
+          (p) => p >= corteMinimo && p <= corteIdeal,
+        )
+        let corteElegido: number
+        if (candidatosH2.length > 0) {
+          /* El h2 mas grande (mas cerca del final de la pagina),
+             asi maximizamos el contenido que queda en esta pagina */
+          corteElegido = Math.max(...candidatosH2)
+        } else if (scoresBlanco) {
+          /* 2. Fallback a la fila con mas blancos, siempre dentro de [minimo, ideal] */
+          corteElegido = mejorCorte(scoresBlanco, corteIdeal, corteMinimo)
+        } else {
+          corteElegido = corteIdeal
+        }
+        alturaEstaSlice = corteElegido - offsetPx
       }
 
       const sliceCanvas = document.createElement("canvas")
@@ -160,17 +194,16 @@ function calcularBlancosPorFila(
   return scores
 }
 
-/* Encuentra la fila con mas pixeles blancos en [ideal - rango, ideal + rango],
-   con restriccion de un minimo (para evitar paginas demasiado cortas).
-   Prefiere cortes cerca del ideal si los scores son similares. */
+/* Encuentra la fila con mas pixeles blancos en [minimo, ideal].
+   Busca SOLO hacia arriba (nunca pasa el ideal) para no overflowear
+   el contenido fuera del A4. Prefiere cortes cerca del ideal. */
 function mejorCorte(
   scoresBlanco: Uint32Array,
   corteIdeal: number,
-  rango: number,
   minimo: number,
 ): number {
-  const inicio = Math.max(Math.round(minimo), corteIdeal - rango)
-  const fin = Math.min(scoresBlanco.length - 1, corteIdeal + rango)
+  const inicio = Math.max(0, Math.round(minimo))
+  const fin = Math.min(scoresBlanco.length - 1, Math.round(corteIdeal))
   if (inicio >= fin) return corteIdeal
 
   let mejor = corteIdeal
@@ -178,7 +211,7 @@ function mejorCorte(
 
   for (let y = inicio; y <= fin; y++) {
     /* Ligera penalidad por distancia al ideal, para desempatar */
-    const distancia = Math.abs(y - corteIdeal)
+    const distancia = corteIdeal - y
     const puntaje = (scoresBlanco[y] ?? 0) - distancia * 0.5
     if (puntaje > mejorPuntaje) {
       mejorPuntaje = puntaje
