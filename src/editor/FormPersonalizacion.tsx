@@ -1,11 +1,31 @@
 "use client"
 
-import { PaletteIcon } from "@phosphor-icons/react"
+import { useState } from "react"
+import {
+  PaletteIcon,
+  DotsSixVerticalIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+} from "@phosphor-icons/react"
 import { SeccionFormulario } from "@/components/molecules/SeccionFormulario"
 import { useCurriculumStore } from "@/lib/store"
-import { COLORES_TEMA, PLANTILLAS, FUENTES, FUENTE_CSS } from "@/lib/constantes"
+import {
+  COLORES_TEMA,
+  PLANTILLAS,
+  FUENTES,
+  FUENTE_CSS,
+  ETIQUETAS_SECCION_ORDENABLE,
+  ORDEN_SECCIONES_INICIAL,
+} from "@/lib/constantes"
 import { cn } from "@/components/ui/cn"
-import type { ColorTema, PlantillaId, FuenteId, IdiomaCv } from "@/types"
+import type { ColorTema, PlantillaId, FuenteId, IdiomaCv, SeccionOrdenable } from "@/types"
+
+function reordenar<T>(arr: T[], desde: number, hacia: number): T[] {
+  const copia = [...arr]
+  const [movido] = copia.splice(desde, 1)
+  if (movido !== undefined) copia.splice(hacia, 0, movido)
+  return copia
+}
 
 const IDIOMAS_CV: { valor: IdiomaCv; etiqueta: string; descripcion: string }[] = [
   { valor: "es", etiqueta: "Español", descripcion: "CV en español" },
@@ -15,6 +35,23 @@ const IDIOMAS_CV: { valor: IdiomaCv; etiqueta: string; descripcion: string }[] =
 export function FormPersonalizacion() {
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
   const set = useCurriculumStore((s) => s.setPersonalizacion)
+  const [arrastrando, setArrastrando] = useState<number | null>(null)
+  const [sobreIndex, setSobreIndex] = useState<number | null>(null)
+  const ordenSecciones = personalizacion.ordenSecciones ?? ORDEN_SECCIONES_INICIAL
+
+  function actualizarOrden(nuevo: SeccionOrdenable[]) {
+    set({ ordenSecciones: nuevo })
+  }
+
+  function moverArriba(i: number) {
+    if (i === 0) return
+    actualizarOrden(reordenar(ordenSecciones, i, i - 1))
+  }
+
+  function moverAbajo(i: number) {
+    if (i === ordenSecciones.length - 1) return
+    actualizarOrden(reordenar(ordenSecciones, i, i + 1))
+  }
 
   return (
     <SeccionFormulario
@@ -123,6 +160,72 @@ export function FormPersonalizacion() {
               </span>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">{f.tipo}</span>
             </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Orden de secciones
+        </label>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 -mt-1">
+          Arrastra o usa las flechas. En Moderno, competencias e idiomas se muestran en el sidebar.
+        </p>
+        <div className="flex flex-col gap-1.5 mt-1">
+          {ordenSecciones.map((id, i) => (
+            <div
+              key={id}
+              draggable
+              onDragStart={() => setArrastrando(i)}
+              onDragEnter={() => setSobreIndex(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault()
+                if (arrastrando !== null && arrastrando !== i) {
+                  actualizarOrden(reordenar(ordenSecciones, arrastrando, i))
+                }
+                setArrastrando(null)
+                setSobreIndex(null)
+              }}
+              onDragEnd={() => {
+                setArrastrando(null)
+                setSobreIndex(null)
+              }}
+              className={cn(
+                "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 bg-white dark:bg-zinc-900 transition-colors",
+                arrastrando === i
+                  ? "opacity-40 border-blue-500"
+                  : sobreIndex === i && arrastrando !== null
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950"
+                    : "border-zinc-200 dark:border-zinc-700",
+              )}
+            >
+              <DotsSixVerticalIcon
+                size={16}
+                className="text-zinc-400 cursor-grab active:cursor-grabbing shrink-0"
+              />
+              <span className="flex-1 text-sm text-zinc-700 dark:text-zinc-300">
+                {ETIQUETAS_SECCION_ORDENABLE[id]}
+              </span>
+              <button
+                type="button"
+                onClick={() => moverArriba(i)}
+                disabled={i === 0}
+                className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                aria-label="Subir"
+              >
+                <ArrowUpIcon size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => moverAbajo(i)}
+                disabled={i === ordenSecciones.length - 1}
+                className="p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                aria-label="Bajar"
+              >
+                <ArrowDownIcon size={14} />
+              </button>
+            </div>
           ))}
         </div>
       </div>

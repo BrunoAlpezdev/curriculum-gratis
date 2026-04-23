@@ -97,9 +97,28 @@ export type FuenteId = "inter" | "roboto" | "lato" | "merriweather" | "libre-bas
 
 export type IdiomaCv = "es" | "en"
 
+export interface Carta {
+  destinatario: string
+  empresaDestino: string
+  cargoPostulado: string
+  ciudadFecha: string
+  cuerpo: string
+  despedida: string
+}
+
+export type SeccionOrdenable =
+  | "experiencia"
+  | "educacion"
+  | "cursos"
+  | "proyectos"
+  | "habilidades"
+  | "idiomas"
+  | "referencias"
+
 export interface Personalizacion {
   color: ColorTema
   plantilla: PlantillaId
   fuente: FuenteId
   idiomaCv: IdiomaCv
+  ordenSecciones: SeccionOrdenable[]
 }

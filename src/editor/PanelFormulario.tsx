@@ -11,6 +11,7 @@ import { FormHabilidades } from "@/editor/FormHabilidades"
 import { FormIdiomas } from "@/editor/FormIdiomas"
 import { FormReferencias } from "@/editor/FormReferencias"
 import { FormInfoAdicional } from "@/editor/FormInfoAdicional"
+import { FormAnalisisAts } from "@/editor/FormAnalisisAts"
 import { GithubLogoIcon, ShieldCheckIcon, HeartIcon } from "@phosphor-icons/react"
 
 export function PanelFormulario() {
@@ -27,6 +28,7 @@ export function PanelFormulario() {
       <FormIdiomas />
       <FormReferencias />
       <FormInfoAdicional />
+      <FormAnalisisAts />
 
       <div className="mt-8 rounded-lg bg-zinc-50 dark:bg-zinc-800 p-4 border border-zinc-200 dark:border-zinc-700">
         <div className="flex items-start gap-3">

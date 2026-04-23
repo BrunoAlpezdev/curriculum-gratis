@@ -5,7 +5,38 @@ import type {
   PlantillaId,
   FuenteId,
   Personalizacion,
+  SeccionOrdenable,
+  Carta,
 } from "@/types"
+
+export const CARTA_INICIAL: Carta = {
+  destinatario: "",
+  empresaDestino: "",
+  cargoPostulado: "",
+  ciudadFecha: "",
+  cuerpo: "",
+  despedida: "Atentamente,",
+}
+
+export const ORDEN_SECCIONES_INICIAL: SeccionOrdenable[] = [
+  "experiencia",
+  "educacion",
+  "cursos",
+  "proyectos",
+  "habilidades",
+  "idiomas",
+  "referencias",
+]
+
+export const ETIQUETAS_SECCION_ORDENABLE: Record<SeccionOrdenable, string> = {
+  experiencia: "Experiencia laboral",
+  educacion: "Educacion",
+  cursos: "Cursos y certificaciones",
+  proyectos: "Proyectos",
+  habilidades: "Competencias",
+  idiomas: "Idiomas",
+  referencias: "Referencias",
+}
 
 export const NIVELES_IDIOMA: { valor: NivelIdioma; etiqueta: string }[] = [
   { valor: "basico", etiqueta: "Basico" },
@@ -57,6 +88,7 @@ export const PERSONALIZACION_INICIAL: Personalizacion = {
   plantilla: "moderno",
   fuente: "inter",
   idiomaCv: "es",
+  ordenSecciones: ORDEN_SECCIONES_INICIAL,
 }
 
 export const DATOS_INICIALES: DatosCurriculum = {

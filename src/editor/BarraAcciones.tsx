@@ -18,6 +18,7 @@ import { useCurriculumStore } from "@/lib/store"
 import { useTema, type Tema } from "@/lib/useTema"
 import { exportarJson, importarJson } from "@/lib/importar-exportar"
 import type { DatosCurriculum } from "@/types"
+import type { Modo } from "@/editor/Editor"
 
 const CICLO_TEMA: Record<Tema, Tema> = {
   sistema: "claro",
@@ -322,10 +323,15 @@ const DATOS_EJEMPLO: DatosCurriculum = {
 const TAPS_REQUERIDOS = 5
 const VENTANA_MS = 2000
 
-export function BarraAcciones() {
+interface BarraAccionesProps {
+  modo: Modo
+}
+
+export function BarraAcciones({ modo }: BarraAccionesProps) {
   const [descargando, setDescargando] = useState(false)
   const [menuAbierto, setMenuAbierto] = useState(false)
   const datos = useCurriculumStore((s) => s.datos)
+  const carta = useCurriculumStore((s) => s.carta)
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
   const reiniciarStore = useCurriculumStore((s) => s.reiniciar)
   const setDatos = useCurriculumStore((s) => s.setDatos)
@@ -400,8 +406,13 @@ export function BarraAcciones() {
   async function descargar() {
     setDescargando(true)
     try {
-      const { generarPdf } = await import("@/lib/generar-pdf")
-      await generarPdf(datos, personalizacion)
+      if (modo === "carta") {
+        const { generarPdfCarta } = await import("@/lib/generar-pdf-carta")
+        generarPdfCarta(datos, carta, personalizacion)
+      } else {
+        const { generarPdf } = await import("@/lib/generar-pdf")
+        await generarPdf(datos, personalizacion)
+      }
     } finally {
       setDescargando(false)
     }

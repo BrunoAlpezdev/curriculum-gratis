@@ -10,15 +10,18 @@ import type {
   Idioma,
   Referencia,
   Personalizacion,
+  Carta,
 } from "@/types"
-import { DATOS_INICIALES, PERSONALIZACION_INICIAL } from "@/lib/constantes"
+import { DATOS_INICIALES, PERSONALIZACION_INICIAL, CARTA_INICIAL } from "@/lib/constantes"
 
 interface CurriculumStore {
   datos: DatosCurriculum
   personalizacion: Personalizacion
+  carta: Carta
 
   // Reemplazo completo (import/export)
   setDatos: (datos: DatosCurriculum) => void
+  setCarta: (campos: Partial<Carta>) => void
 
   // Datos personales
   setDatosPersonales: (datos: Partial<DatosPersonales>) => void
@@ -72,8 +75,11 @@ export const useCurriculumStore = create<CurriculumStore>()(
     (set) => ({
       datos: DATOS_INICIALES,
       personalizacion: PERSONALIZACION_INICIAL,
+      carta: CARTA_INICIAL,
 
       setDatos: (nuevos) => set({ datos: nuevos }),
+      setCarta: (campos) =>
+        set((s) => ({ carta: { ...s.carta, ...campos } })),
 
       setDatosPersonales: (nuevos) =>
         set((s) => ({
@@ -334,6 +340,7 @@ export const useCurriculumStore = create<CurriculumStore>()(
         set({
           datos: DATOS_INICIALES,
           personalizacion: PERSONALIZACION_INICIAL,
+          carta: CARTA_INICIAL,
         }),
     }),
     {
@@ -350,6 +357,10 @@ export const useCurriculumStore = create<CurriculumStore>()(
           personalizacion: {
             ...PERSONALIZACION_INICIAL,
             ...(estado?.personalizacion as object),
+          },
+          carta: {
+            ...CARTA_INICIAL,
+            ...(estado?.carta as object),
           },
         } as CurriculumStore
       },

@@ -1,17 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { PencilSimpleIcon, EyeIcon } from "@phosphor-icons/react"
+import { PencilSimpleIcon, EyeIcon, FileTextIcon, EnvelopeIcon } from "@phosphor-icons/react"
 import { BarraAcciones } from "@/editor/BarraAcciones"
 import { PanelFormulario } from "@/editor/PanelFormulario"
+import { PanelFormularioCarta } from "@/editor/PanelFormularioCarta"
 import { PanelVistaPrevia } from "@/editor/PanelVistaPrevia"
+import { PanelVistaCarta } from "@/editor/PanelVistaCarta"
 import { cn } from "@/components/ui/cn"
 import { useHidratado } from "@/lib/useHidratado"
 
 type Tab = "editar" | "preview"
+export type Modo = "cv" | "carta"
 
 export function Editor() {
   const [tab, setTab] = useState<Tab>("editar")
+  const [modo, setModo] = useState<Modo>("cv")
   const hidratado = useHidratado()
 
   if (!hidratado) {
@@ -24,7 +28,37 @@ export function Editor() {
 
   return (
     <div className="flex h-screen flex-col">
-      <BarraAcciones />
+      <BarraAcciones modo={modo} />
+
+      {/* Toggle CV / Carta */}
+      <div data-no-print className="flex items-center justify-center gap-1 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/40 py-1.5">
+        <button
+          type="button"
+          onClick={() => setModo("cv")}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+            modo === "cv"
+              ? "bg-blue-600 text-white"
+              : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+          )}
+        >
+          <FileTextIcon size={14} />
+          Curriculum
+        </button>
+        <button
+          type="button"
+          onClick={() => setModo("carta")}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+            modo === "carta"
+              ? "bg-blue-600 text-white"
+              : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+          )}
+        >
+          <EnvelopeIcon size={14} />
+          Carta de presentacion
+        </button>
+      </div>
 
       {/* Tabs mobile */}
       <div data-no-print className="flex md:hidden border-b border-zinc-200 dark:border-zinc-700">
@@ -64,7 +98,7 @@ export function Editor() {
             tab === "editar" ? "block" : "hidden",
           )}
         >
-          <PanelFormulario />
+          {modo === "cv" ? <PanelFormulario /> : <PanelFormularioCarta />}
         </div>
         <div
           className={cn(
@@ -72,7 +106,7 @@ export function Editor() {
             tab === "preview" ? "block" : "hidden",
           )}
         >
-          <PanelVistaPrevia />
+          {modo === "cv" ? <PanelVistaPrevia /> : <PanelVistaCarta />}
         </div>
       </div>
     </div>
