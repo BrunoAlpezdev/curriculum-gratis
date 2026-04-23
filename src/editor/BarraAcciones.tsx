@@ -1,10 +1,22 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { DownloadSimpleIcon, ArrowCounterClockwiseIcon, SpinnerIcon, SunIcon, MoonIcon, MonitorIcon, EyeIcon } from "@phosphor-icons/react"
+import { useState, useRef, useEffect } from "react"
+import {
+  DownloadSimpleIcon,
+  ArrowCounterClockwiseIcon,
+  SpinnerIcon,
+  SunIcon,
+  MoonIcon,
+  MonitorIcon,
+  EyeIcon,
+  DotsThreeVerticalIcon,
+  FileArrowDownIcon,
+  FileArrowUpIcon,
+} from "@phosphor-icons/react"
 import { Button } from "@/components/atoms/Button"
 import { useCurriculumStore } from "@/lib/store"
 import { useTema, type Tema } from "@/lib/useTema"
+import { exportarJson, importarJson } from "@/lib/importar-exportar"
 import type { DatosCurriculum } from "@/types"
 
 const CICLO_TEMA: Record<Tema, Tema> = {
@@ -148,6 +160,9 @@ function generarDatosMock(): DatosCurriculum {
       email: perfil.email,
       telefono: `+56 9 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`,
       ubicacion: aleatorio(UBICACIONES),
+      linkedin: `linkedin.com/in/${perfil.nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "-")}`,
+      github: "",
+      sitioWeb: "",
     },
     perfil: perfil.perfil,
     experiencia: [
@@ -182,11 +197,43 @@ function generarDatosMock(): DatosCurriculum {
         descripcion: "Graduacion con distincion. Participacion activa en proyectos de investigacion.",
       },
     ],
+    cursos: [
+      {
+        id: crypto.randomUUID(),
+        nombre: "Scrum Fundamentals Certified",
+        institucion: "SCRUMstudy",
+        fecha: "2022-06",
+        url: "",
+      },
+    ],
+    proyectos: [],
     habilidades: perfil.habilidades,
     idiomas: [
       { id: crypto.randomUUID(), nombre: "Español", nivel: "nativo" },
       { id: crypto.randomUUID(), nombre: "Ingles", nivel: "avanzado" },
     ],
+    referencias: [
+      {
+        id: crypto.randomUUID(),
+        nombre: "Maria Gonzalez",
+        cargo: "Gerente de Operaciones",
+        empresa: aleatorio(EMPRESAS),
+        email: "maria.gonzalez@empresa.cl",
+        telefono: `+56 9 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`,
+        relacion: "Jefe directo",
+      },
+      {
+        id: crypto.randomUUID(),
+        nombre: "Carlos Rojas",
+        cargo: "Lider de Proyecto",
+        empresa: aleatorio(EMPRESAS),
+        email: "carlos.rojas@empresa.cl",
+        telefono: `+56 9 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`,
+        relacion: "Colega de equipo",
+      },
+    ],
+    disponibilidad: "Inmediata",
+    pretensionesRenta: "",
   }
 }
 
@@ -197,6 +244,9 @@ const DATOS_EJEMPLO: DatosCurriculum = {
     email: "brunoalpezdev@gmail.com",
     telefono: "+56 9 1234 5678",
     ubicacion: "Chile",
+    linkedin: "linkedin.com/in/brunoalpezdev",
+    github: "github.com/BrunoAlpezdev",
+    sitioWeb: "",
   },
   perfil:
     "Ingeniero en Informatica con experiencia en automatizacion, analisis de datos y reestructuracion de procesos complejos. Especializado en Tecnologias Web y Python para automatizaciones, optimizacion de procesos y generacion de herramientas internas orientadas a operaciones y toma de decisiones. Experiencia previa en liderazgo tecnico y modernizacion de sistemas internos.",
@@ -234,6 +284,16 @@ const DATOS_EJEMPLO: DatosCurriculum = {
       descripcion: "",
     },
   ],
+  cursos: [],
+  proyectos: [
+    {
+      id: crypto.randomUUID(),
+      nombre: "Curriculum Gratis",
+      descripcion: "Generador de CV open source en Next.js con exportacion a PDF optimizado para ATS. Totalmente gratuito y sin backend.",
+      url: "github.com/BrunoAlpezdev/curriculum-gratis",
+      tecnologias: "Next.js, React, TypeScript, Tailwind CSS, Zustand",
+    },
+  ],
   habilidades: [
     "Python",
     "React",
@@ -252,6 +312,9 @@ const DATOS_EJEMPLO: DatosCurriculum = {
     { id: crypto.randomUUID(), nombre: "Español", nivel: "nativo" },
     { id: crypto.randomUUID(), nombre: "Ingles", nivel: "avanzado" },
   ],
+  referencias: [],
+  disponibilidad: "",
+  pretensionesRenta: "",
 }
 
 const TAPS_REQUERIDOS = 5
@@ -259,10 +322,57 @@ const VENTANA_MS = 2000
 
 export function BarraAcciones() {
   const [descargando, setDescargando] = useState(false)
+  const [menuAbierto, setMenuAbierto] = useState(false)
   const datos = useCurriculumStore((s) => s.datos)
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
   const reiniciarStore = useCurriculumStore((s) => s.reiniciar)
+  const setDatos = useCurriculumStore((s) => s.setDatos)
+  const setPersonalizacion = useCurriculumStore((s) => s.setPersonalizacion)
   const tapsRef = useRef<number[]>([])
+  const menuRef = useRef<HTMLDivElement>(null)
+  const inputArchivoRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!menuAbierto) return
+    function handleClickFuera(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuAbierto(false)
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuAbierto(false)
+    }
+    document.addEventListener("mousedown", handleClickFuera)
+    document.addEventListener("keydown", handleEscape)
+    return () => {
+      document.removeEventListener("mousedown", handleClickFuera)
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [menuAbierto])
+
+  function exportar() {
+    exportarJson(datos, personalizacion)
+    setMenuAbierto(false)
+  }
+
+  function pedirImportar() {
+    inputArchivoRef.current?.click()
+    setMenuAbierto(false)
+  }
+
+  async function handleArchivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0]
+    e.target.value = ""
+    if (!archivo) return
+    const resultado = await importarJson(archivo)
+    if (!resultado.ok) {
+      window.alert(`No se pudo importar: ${resultado.error}`)
+      return
+    }
+    if (!window.confirm("Esto reemplazará los datos actuales. ¿Continuar?")) return
+    setDatos(resultado.datos)
+    setPersonalizacion(resultado.personalizacion)
+  }
 
   function handleTapTitulo() {
     const ahora = Date.now()
@@ -332,6 +442,52 @@ export function BarraAcciones() {
           <ArrowCounterClockwiseIcon size={16} />
           Reiniciar
         </Button>
+
+        <div ref={menuRef} className="relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMenuAbierto((v) => !v)}
+            title="Mas opciones"
+            aria-haspopup="menu"
+            aria-expanded={menuAbierto}
+          >
+            <DotsThreeVerticalIcon size={18} />
+          </Button>
+          {menuAbierto && (
+            <div
+              role="menu"
+              className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-1"
+            >
+              <button
+                type="button"
+                role="menuitem"
+                onClick={exportar}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+              >
+                <FileArrowDownIcon size={16} />
+                Exportar JSON
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={pedirImportar}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+              >
+                <FileArrowUpIcon size={16} />
+                Importar JSON
+              </button>
+            </div>
+          )}
+          <input
+            ref={inputArchivoRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={handleArchivo}
+          />
+        </div>
+
         <Button size="sm" className="whitespace-nowrap" onClick={descargar} disabled={descargando}>
           {descargando ? (
             <SpinnerIcon size={16} className="animate-spin" />

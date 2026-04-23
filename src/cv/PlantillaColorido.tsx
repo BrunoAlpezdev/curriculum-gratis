@@ -7,10 +7,16 @@ import {
   LightningIcon,
   TranslateIcon,
   UserIcon,
+  UsersIcon,
+  LinkedinLogoIcon,
+  GithubLogoIcon,
+  GlobeIcon,
+  CertificateIcon,
+  CodeIcon,
 } from "@phosphor-icons/react"
 import type { DatosCurriculum, Personalizacion } from "@/types"
 import { getColorHex, getColorClaro } from "@/lib/colores"
-import { formatearRangoFechas, formatearFechaEducacion } from "@/lib/formato"
+import { formatearRangoFechas, formatearFechaEducacion, formatearFecha } from "@/lib/formato"
 
 interface Props {
   datos: DatosCurriculum
@@ -58,6 +64,24 @@ export function PlantillaColorido({ datos, personalizacion }: Props) {
               <span className="flex items-center gap-1">
                 <MapPinIcon size={12} />
                 {dp.ubicacion}
+              </span>
+            )}
+            {dp.linkedin && (
+              <span className="flex items-center gap-1">
+                <LinkedinLogoIcon size={12} />
+                {dp.linkedin}
+              </span>
+            )}
+            {dp.github && (
+              <span className="flex items-center gap-1">
+                <GithubLogoIcon size={12} />
+                {dp.github}
+              </span>
+            )}
+            {dp.sitioWeb && (
+              <span className="flex items-center gap-1">
+                <GlobeIcon size={12} />
+                {dp.sitioWeb}
               </span>
             )}
           </div>
@@ -150,6 +174,82 @@ export function PlantillaColorido({ datos, personalizacion }: Props) {
           </div>
         )}
 
+        {/* Cursos */}
+        {datos.cursos.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <CertificateIcon size={14} style={{ color }} weight="bold" />
+              <h2 className="text-[12px] font-bold uppercase tracking-wide" style={{ color }}>
+                Cursos y Certificaciones
+              </h2>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {datos.cursos.map((curso) => (
+                <div key={curso.id} className="pl-3 border-l-2" style={{ borderColor: color }}>
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="font-bold text-zinc-800">
+                      {curso.nombre || "Curso"}
+                    </h3>
+                    {curso.fecha && (
+                      <span className="text-[11px] text-zinc-500 shrink-0 ml-2">
+                        {formatearFecha(curso.fecha)}
+                      </span>
+                    )}
+                  </div>
+                  {curso.institucion && (
+                    <p className="text-zinc-500 italic text-[11px]">
+                      {curso.institucion}
+                    </p>
+                  )}
+                  {curso.url && (
+                    <p className="text-[11px] font-medium" style={{ color }}>
+                      {curso.url}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Proyectos */}
+        {datos.proyectos.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <CodeIcon size={14} style={{ color }} weight="bold" />
+              <h2 className="text-[12px] font-bold uppercase tracking-wide" style={{ color }}>
+                Proyectos
+              </h2>
+            </div>
+            <div className="flex flex-col gap-2">
+              {datos.proyectos.map((p) => (
+                <div key={p.id} className="pl-3 border-l-2" style={{ borderColor: color }}>
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="font-bold text-zinc-800">
+                      {p.nombre || "Proyecto"}
+                    </h3>
+                    {p.url && (
+                      <span className="text-[11px] font-medium shrink-0 ml-2" style={{ color }}>
+                        {p.url}
+                      </span>
+                    )}
+                  </div>
+                  {p.tecnologias && (
+                    <p className="text-zinc-500 italic text-[11px]">
+                      {p.tecnologias}
+                    </p>
+                  )}
+                  {p.descripcion && (
+                    <p className="text-zinc-600 mt-0.5 whitespace-pre-line">
+                      {p.descripcion}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Habilidades */}
         {datos.habilidades.length > 0 && (
           <div>
@@ -190,6 +290,65 @@ export function PlantillaColorido({ datos, personalizacion }: Props) {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Referencias */}
+        {datos.referencias.length > 0 && (
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
+              <UsersIcon size={14} style={{ color }} weight="bold" />
+              <h2 className="text-[12px] font-bold uppercase tracking-wide" style={{ color }}>
+                Referencias
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {datos.referencias.map((ref) => (
+                <div
+                  key={ref.id}
+                  className="p-2.5 rounded-lg"
+                  style={{ backgroundColor: colorClaro }}
+                >
+                  <h3 className="font-bold text-zinc-800">{ref.nombre || "Nombre"}</h3>
+                  {(ref.cargo || ref.empresa) && (
+                    <p className="text-zinc-600 text-[11px]">
+                      {ref.cargo}
+                      {ref.cargo && ref.empresa && " · "}
+                      {ref.empresa}
+                    </p>
+                  )}
+                  {ref.relacion && (
+                    <p className="text-[11px] font-medium" style={{ color }}>
+                      {ref.relacion}
+                    </p>
+                  )}
+                  <div className="flex flex-col text-[11px] text-zinc-600">
+                    {ref.email && <span>{ref.email}</span>}
+                    {ref.telefono && <span>{ref.telefono}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(datos.disponibilidad || datos.pretensionesRenta) && (
+          <div
+            className="mt-auto p-2.5 rounded-lg text-[11px] flex flex-wrap gap-x-5 gap-y-1"
+            style={{ backgroundColor: colorClaro }}
+          >
+            {datos.disponibilidad && (
+              <span className="text-zinc-700">
+                <span className="font-bold" style={{ color }}>Disponibilidad:</span>{" "}
+                {datos.disponibilidad}
+              </span>
+            )}
+            {datos.pretensionesRenta && (
+              <span className="text-zinc-700">
+                <span className="font-bold" style={{ color }}>Pretension:</span>{" "}
+                {datos.pretensionesRenta}
+              </span>
+            )}
           </div>
         )}
       </div>

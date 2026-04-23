@@ -5,8 +5,12 @@ import { FormDatosPersonales } from "@/editor/FormDatosPersonales"
 import { FormPerfil } from "@/editor/FormPerfil"
 import { FormExperiencia } from "@/editor/FormExperiencia"
 import { FormEducacion } from "@/editor/FormEducacion"
+import { FormCursos } from "@/editor/FormCursos"
+import { FormProyectos } from "@/editor/FormProyectos"
 import { FormHabilidades } from "@/editor/FormHabilidades"
 import { FormIdiomas } from "@/editor/FormIdiomas"
+import { FormReferencias } from "@/editor/FormReferencias"
+import { FormInfoAdicional } from "@/editor/FormInfoAdicional"
 import { GithubLogoIcon, ShieldCheckIcon, HeartIcon } from "@phosphor-icons/react"
 
 export function PanelFormulario() {
@@ -17,8 +21,12 @@ export function PanelFormulario() {
       <FormPerfil />
       <FormExperiencia />
       <FormEducacion />
+      <FormCursos />
+      <FormProyectos />
       <FormHabilidades />
       <FormIdiomas />
+      <FormReferencias />
+      <FormInfoAdicional />
 
       <div className="mt-8 rounded-lg bg-zinc-50 dark:bg-zinc-800 p-4 border border-zinc-200 dark:border-zinc-700">
         <div className="flex items-start gap-3">

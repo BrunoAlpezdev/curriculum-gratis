@@ -5,7 +5,10 @@ import type {
   DatosPersonales,
   Experiencia,
   Educacion,
+  Curso,
+  Proyecto,
   Idioma,
+  Referencia,
   Personalizacion,
 } from "@/types"
 import { DATOS_INICIALES, PERSONALIZACION_INICIAL } from "@/lib/constantes"
@@ -14,9 +17,14 @@ interface CurriculumStore {
   datos: DatosCurriculum
   personalizacion: Personalizacion
 
+  // Reemplazo completo (import/export)
+  setDatos: (datos: DatosCurriculum) => void
+
   // Datos personales
   setDatosPersonales: (datos: Partial<DatosPersonales>) => void
   setPerfil: (perfil: string) => void
+  setDisponibilidad: (valor: string) => void
+  setPretensionesRenta: (valor: string) => void
 
   // Experiencia
   agregarExperiencia: () => void
@@ -28,6 +36,16 @@ interface CurriculumStore {
   actualizarEducacion: (id: string, datos: Partial<Educacion>) => void
   eliminarEducacion: (id: string) => void
 
+  // Cursos
+  agregarCurso: () => void
+  actualizarCurso: (id: string, datos: Partial<Curso>) => void
+  eliminarCurso: (id: string) => void
+
+  // Proyectos
+  agregarProyecto: () => void
+  actualizarProyecto: (id: string, datos: Partial<Proyecto>) => void
+  eliminarProyecto: (id: string) => void
+
   // Habilidades
   agregarHabilidad: (nombre: string) => void
   eliminarHabilidad: (nombre: string) => void
@@ -36,6 +54,11 @@ interface CurriculumStore {
   agregarIdioma: () => void
   actualizarIdioma: (id: string, datos: Partial<Idioma>) => void
   eliminarIdioma: (id: string) => void
+
+  // Referencias
+  agregarReferencia: () => void
+  actualizarReferencia: (id: string, datos: Partial<Referencia>) => void
+  eliminarReferencia: (id: string) => void
 
   // Personalizacion
   setPersonalizacion: (p: Partial<Personalizacion>) => void
@@ -50,6 +73,8 @@ export const useCurriculumStore = create<CurriculumStore>()(
       datos: DATOS_INICIALES,
       personalizacion: PERSONALIZACION_INICIAL,
 
+      setDatos: (nuevos) => set({ datos: nuevos }),
+
       setDatosPersonales: (nuevos) =>
         set((s) => ({
           datos: {
@@ -60,6 +85,12 @@ export const useCurriculumStore = create<CurriculumStore>()(
 
       setPerfil: (perfil) =>
         set((s) => ({ datos: { ...s.datos, perfil } })),
+
+      setDisponibilidad: (valor) =>
+        set((s) => ({ datos: { ...s.datos, disponibilidad: valor } })),
+
+      setPretensionesRenta: (valor) =>
+        set((s) => ({ datos: { ...s.datos, pretensionesRenta: valor } })),
 
       agregarExperiencia: () =>
         set((s) => ({
@@ -135,6 +166,76 @@ export const useCurriculumStore = create<CurriculumStore>()(
           },
         })),
 
+      agregarCurso: () =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            cursos: [
+              ...s.datos.cursos,
+              {
+                id: crypto.randomUUID(),
+                nombre: "",
+                institucion: "",
+                fecha: "",
+                url: "",
+              },
+            ],
+          },
+        })),
+
+      actualizarCurso: (id, nuevos) =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            cursos: s.datos.cursos.map((c) =>
+              c.id === id ? { ...c, ...nuevos } : c,
+            ),
+          },
+        })),
+
+      eliminarCurso: (id) =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            cursos: s.datos.cursos.filter((c) => c.id !== id),
+          },
+        })),
+
+      agregarProyecto: () =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            proyectos: [
+              ...s.datos.proyectos,
+              {
+                id: crypto.randomUUID(),
+                nombre: "",
+                descripcion: "",
+                url: "",
+                tecnologias: "",
+              },
+            ],
+          },
+        })),
+
+      actualizarProyecto: (id, nuevos) =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            proyectos: s.datos.proyectos.map((p) =>
+              p.id === id ? { ...p, ...nuevos } : p,
+            ),
+          },
+        })),
+
+      eliminarProyecto: (id) =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            proyectos: s.datos.proyectos.filter((p) => p.id !== id),
+          },
+        })),
+
       agregarHabilidad: (nombre) =>
         set((s) => {
           if (s.datos.habilidades.includes(nombre)) return s
@@ -187,6 +288,43 @@ export const useCurriculumStore = create<CurriculumStore>()(
           },
         })),
 
+      agregarReferencia: () =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            referencias: [
+              ...s.datos.referencias,
+              {
+                id: crypto.randomUUID(),
+                nombre: "",
+                cargo: "",
+                empresa: "",
+                email: "",
+                telefono: "",
+                relacion: "",
+              },
+            ],
+          },
+        })),
+
+      actualizarReferencia: (id, nuevos) =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            referencias: s.datos.referencias.map((r) =>
+              r.id === id ? { ...r, ...nuevos } : r,
+            ),
+          },
+        })),
+
+      eliminarReferencia: (id) =>
+        set((s) => ({
+          datos: {
+            ...s.datos,
+            referencias: s.datos.referencias.filter((r) => r.id !== id),
+          },
+        })),
+
       setPersonalizacion: (p) =>
         set((s) => ({
           personalizacion: { ...s.personalizacion, ...p },
@@ -205,6 +343,10 @@ export const useCurriculumStore = create<CurriculumStore>()(
         return {
           ...current,
           ...estado,
+          datos: {
+            ...DATOS_INICIALES,
+            ...(estado?.datos as object),
+          },
           personalizacion: {
             ...PERSONALIZACION_INICIAL,
             ...(estado?.personalizacion as object),

@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf"
 import type { DatosCurriculum, Personalizacion } from "@/types"
 import { getColorHex } from "@/lib/colores"
-import { formatearRangoFechas, formatearFechaEducacion } from "@/lib/formato"
+import { formatearRangoFechas, formatearFechaEducacion, formatearFecha } from "@/lib/formato"
 import { FUENTES } from "@/lib/constantes"
 
 const MARGIN = 20
@@ -67,6 +67,15 @@ export function generarPdfAts(
     pdf.setFontSize(9)
     setMuted()
     pdf.text(contacto, PAGE_WIDTH / 2, y, { align: "center" })
+    y += 4
+  }
+
+  const enlaces = [dp.linkedin, dp.github, dp.sitioWeb].filter(Boolean).join("  |  ")
+  if (enlaces) {
+    pdf.setFont(fuenteBase, "normal")
+    pdf.setFontSize(9)
+    setMuted()
+    pdf.text(enlaces, PAGE_WIDTH / 2, y, { align: "center" })
     y += 4
   }
 
@@ -183,6 +192,87 @@ export function generarPdfAts(
     }
   }
 
+  // --- Cursos ---
+  if (datos.cursos.length > 0) {
+    y = renderSeccion(pdf, "CURSOS Y CERTIFICACIONES", y, color, fuenteBase)
+    for (const curso of datos.cursos) {
+      checkPage(10)
+
+      pdf.setFont(fuenteBase, "bold")
+      pdf.setFontSize(10)
+      setBlack()
+      pdf.text(curso.nombre || "Curso", MARGIN, y)
+
+      if (curso.fecha) {
+        pdf.setFont(fuenteBase, "normal")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(formatearFecha(curso.fecha), PAGE_WIDTH - MARGIN, y, { align: "right" })
+      }
+      y += 4
+
+      if (curso.institucion) {
+        pdf.setFont(fuenteBase, "oblique")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(curso.institucion, MARGIN, y)
+        y += 4
+      }
+
+      if (curso.url) {
+        pdf.setFont(fuenteBase, "normal")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(curso.url, MARGIN, y)
+        y += 4
+      }
+
+      y += 1
+    }
+    y += 2
+  }
+
+  // --- Proyectos ---
+  if (datos.proyectos.length > 0) {
+    y = renderSeccion(pdf, "PROYECTOS", y, color, fuenteBase)
+    for (const p of datos.proyectos) {
+      checkPage(14)
+
+      pdf.setFont(fuenteBase, "bold")
+      pdf.setFontSize(10)
+      setBlack()
+      pdf.text(p.nombre || "Proyecto", MARGIN, y)
+
+      if (p.url) {
+        pdf.setFont(fuenteBase, "oblique")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(p.url, PAGE_WIDTH - MARGIN, y, { align: "right" })
+      }
+      y += 4
+
+      if (p.tecnologias) {
+        pdf.setFont(fuenteBase, "oblique")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(p.tecnologias, MARGIN, y)
+        y += 4
+      }
+
+      if (p.descripcion) {
+        pdf.setFont(fuenteBase, "normal")
+        pdf.setFontSize(9)
+        setColor(82, 82, 91)
+        const lines = pdf.splitTextToSize(p.descripcion, CONTENT_WIDTH)
+        checkPage(lines.length * 3.5)
+        pdf.text(lines, MARGIN, y)
+        y += lines.length * 3.5 + 1
+      }
+
+      y += 2
+    }
+  }
+
   // --- Habilidades ---
   if (datos.habilidades.length > 0) {
     y = renderSeccion(pdf, "COMPETENCIAS", y, color, fuenteBase)
@@ -208,6 +298,81 @@ export function generarPdfAts(
     const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
     checkPage(lines.length * 4)
     pdf.text(lines, MARGIN, y)
+    y += lines.length * 4 + 4
+  }
+
+  // --- Referencias ---
+  if (datos.referencias.length > 0) {
+    y = renderSeccion(pdf, "REFERENCIAS", y, color, fuenteBase)
+    for (const ref of datos.referencias) {
+      checkPage(16)
+
+      pdf.setFont(fuenteBase, "bold")
+      pdf.setFontSize(10)
+      setBlack()
+      pdf.text(ref.nombre || "Nombre", MARGIN, y)
+      y += 4
+
+      const cargoEmpresa = [ref.cargo, ref.empresa].filter(Boolean).join(" · ")
+      if (cargoEmpresa) {
+        pdf.setFont(fuenteBase, "normal")
+        pdf.setFontSize(9)
+        setColor(82, 82, 91)
+        pdf.text(cargoEmpresa, MARGIN, y)
+        y += 4
+      }
+
+      if (ref.relacion) {
+        pdf.setFont(fuenteBase, "oblique")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(ref.relacion, MARGIN, y)
+        y += 4
+      }
+
+      const contactoRef = [ref.email, ref.telefono].filter(Boolean).join("  ·  ")
+      if (contactoRef) {
+        pdf.setFont(fuenteBase, "normal")
+        pdf.setFontSize(9)
+        setMuted()
+        pdf.text(contactoRef, MARGIN, y)
+        y += 4
+      }
+
+      y += 2
+    }
+  }
+
+  // --- Informacion adicional (disponibilidad / pretensiones) ---
+  if (datos.disponibilidad || datos.pretensionesRenta) {
+    checkPage(12)
+    y += 3
+    pdf.setDrawColor(220, 220, 220)
+    pdf.setLineWidth(0.2)
+    pdf.line(MARGIN, y, PAGE_WIDTH - MARGIN, y)
+    y += 4
+
+    pdf.setFontSize(9)
+    if (datos.disponibilidad) {
+      pdf.setFont(fuenteBase, "bold")
+      setAccent()
+      pdf.text("Disponibilidad:", MARGIN, y)
+      const w = pdf.getTextWidth("Disponibilidad: ")
+      pdf.setFont(fuenteBase, "normal")
+      setColor(82, 82, 91)
+      pdf.text(datos.disponibilidad, MARGIN + w, y)
+      y += 4
+    }
+    if (datos.pretensionesRenta) {
+      pdf.setFont(fuenteBase, "bold")
+      setAccent()
+      pdf.text("Pretension de renta:", MARGIN, y)
+      const w = pdf.getTextWidth("Pretension de renta: ")
+      pdf.setFont(fuenteBase, "normal")
+      setColor(82, 82, 91)
+      pdf.text(datos.pretensionesRenta, MARGIN + w, y)
+      y += 4
+    }
   }
 
   const nombre = dp.nombreCompleto.trim().replace(/\s+/g, "_") || "curriculum"

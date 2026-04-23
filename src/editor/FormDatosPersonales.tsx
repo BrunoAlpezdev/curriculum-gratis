@@ -17,7 +17,8 @@ export function FormDatosPersonales() {
         "Pon solo ciudad y país en ubicación — la dirección completa es innecesaria y un riesgo de privacidad.",
         "El título profesional es lo primero que lee el reclutador. Sé específico: 'Desarrollador Frontend React' es mucho mejor que 'Desarrollador'.",
         "Usa un email profesional. Nada de mails de cuando tenías 15 años.",
-        "No agregues fecha de nacimiento ni foto — en la mayoría de los países no se pide y puede generar sesgos.",
+        "LinkedIn es casi obligatorio hoy. GitHub/portafolio solo si son relevantes para el puesto — no ensucies con enlaces que no aportan.",
+        "Los enlaces van sin 'https://' — se ven más limpios y ocupan menos ancho.",
       ]}
     >
       <Input
@@ -53,6 +54,26 @@ export function FormDatosPersonales() {
         placeholder="Santiago, Chile"
         value={datos.ubicacion}
         onChange={(e) => set({ ubicacion: e.target.value })}
+      />
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          label="LinkedIn"
+          placeholder="linkedin.com/in/usuario"
+          value={datos.linkedin}
+          onChange={(e) => set({ linkedin: e.target.value })}
+        />
+        <Input
+          label="GitHub"
+          placeholder="github.com/usuario"
+          value={datos.github}
+          onChange={(e) => set({ github: e.target.value })}
+        />
+      </div>
+      <Input
+        label="Sitio web o portafolio"
+        placeholder="miportafolio.cl"
+        value={datos.sitioWeb}
+        onChange={(e) => set({ sitioWeb: e.target.value })}
       />
     </SeccionFormulario>
   )
