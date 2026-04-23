@@ -2,6 +2,7 @@ import html2canvas from "html2canvas-pro"
 import { jsPDF } from "jspdf"
 import type { DatosCurriculum, Personalizacion } from "@/types"
 import { PLANTILLAS } from "@/lib/constantes"
+import { getColorHex } from "@/lib/colores"
 import { A4_WIDTH_PX, A4_HEIGHT_PX } from "@/cv/CurriculumVista"
 
 const A4_WIDTH_MM = 210
@@ -23,11 +24,14 @@ export async function generarPdf(
     const { generarPdfAts } = await import("@/lib/generar-pdf-ats")
     generarPdfAts(datos, personalizacion)
   } else {
-    await generarPdfVisual(datos.datosPersonales.nombreCompleto)
+    await generarPdfVisual(datos.datosPersonales.nombreCompleto, personalizacion)
   }
 }
 
-async function generarPdfVisual(nombreCompleto: string) {
+async function generarPdfVisual(
+  nombreCompleto: string,
+  personalizacion: Personalizacion,
+) {
   const el = document.getElementById("curriculum-pdf")
   if (!el) return
 
@@ -84,6 +88,21 @@ async function generarPdfVisual(nombreCompleto: string) {
 
   const imgWidth = A4_WIDTH_MM
   const imgHeight = (canvas.height * A4_WIDTH_MM) / canvas.width
+
+  /* Sidebar fullbleed (solo Moderno): cuando un slice es mas corto que la
+     pagina (ultima pagina o corte inteligente arriba), el sidebar queda
+     truncado y se ve blanco debajo. Rellenamos la zona del sidebar con
+     el color del tema para que baje hasta el borde de la hoja. */
+  const tieneSidebar = personalizacion.plantilla === "moderno"
+  const sidebarWidthMm = A4_WIDTH_MM * 0.33
+  const sidebarRgb = tieneSidebar ? hexToRgb(getColorHex(personalizacion.color)) : null
+
+  function rellenarSidebar(desdeY: number) {
+    if (!tieneSidebar || !sidebarRgb) return
+    if (desdeY >= A4_HEIGHT_MM - 0.5) return
+    pdf.setFillColor(sidebarRgb.r, sidebarRgb.g, sidebarRgb.b)
+    pdf.rect(0, desdeY, sidebarWidthMm, A4_HEIGHT_MM - desdeY, "F")
+  }
 
   if (imgHeight <= A4_HEIGHT_MM + A4_TOLERANCIA_MM) {
     const imgData = canvas.toDataURL("image/png")
@@ -162,6 +181,7 @@ async function generarPdfVisual(nombreCompleto: string) {
       const sliceData = sliceCanvas.toDataURL("image/png")
       const sliceAltoMm = alturaEstaSlice / pxPorMm
       pdf.addImage(sliceData, "PNG", 0, 0, imgWidth, sliceAltoMm, undefined, "FAST")
+      rellenarSidebar(sliceAltoMm)
 
       offsetPx += alturaEstaSlice
       paginaIdx += 1
@@ -205,6 +225,13 @@ function calcularBlancosPorFila(
     }
   }
   return scores
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return { r, g, b }
 }
 
 /* Encuentra la fila con mas pixeles blancos en [minimo, ideal].
