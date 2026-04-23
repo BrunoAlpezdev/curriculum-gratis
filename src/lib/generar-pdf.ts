@@ -72,11 +72,12 @@ async function generarPdfVisual(
       elClonado.style.minHeight = `${A4_HEIGHT_PX}px`
       elClonado.style.transform = "none"
 
-      /* Ocultamos decorativos — los dibujamos despues con jsPDF en las
-         posiciones correctas por pagina (el bottom-left debe quedar al
-         fondo de la ULTIMA pagina del PDF, no al fin del contenido). */
+      /* Removemos decorativos del DOM clonado — los dibujamos despues con
+         jsPDF en las posiciones correctas por pagina. Usamos remove() en vez
+         de display:none porque html2canvas-pro a veces igual captura elementos
+         ocultados por CSS cuando tienen position:absolute. */
       elClonado.querySelectorAll("[data-decorativo]").forEach((nodo) => {
-        ;(nodo as HTMLElement).style.display = "none"
+        nodo.remove()
       })
 
       let ancestro: HTMLElement | null = elClonado.parentElement
