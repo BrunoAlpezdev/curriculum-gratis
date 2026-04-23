@@ -36,14 +36,19 @@ async function generarPdfVisual(nombreCompleto: string) {
      se queda corto — scrollHeight es mas robusto para medir el contenido real. */
   const alturaContenido = Math.max(el.scrollHeight, el.offsetHeight, A4_HEIGHT_PX)
 
-  /* Medimos posicion (top) de cada h2 relativo al root en CSS px.
-     Sirve como "cortes limpios" preferidos al paginar — cortar justo
-     antes de un h2 deja la seccion entera en la pagina siguiente. */
+  /* Medimos posicion (top) de cada h2 relativo al root en CSS px SIN ESCALAR.
+     getBoundingClientRect devuelve coords escaladas porque el preview aplica
+     transform: scale(...). Dividimos por el factor actual (rect.height /
+     scrollHeight) para obtener la posicion en el layout real, que es lo que
+     corresponde al canvas de html2canvas. */
   const rootRect = el.getBoundingClientRect()
+  const factorPreview = rootRect.height > 0 && el.scrollHeight > 0
+    ? rootRect.height / el.scrollHeight
+    : 1
   const posicionesH2Css: number[] = []
   el.querySelectorAll("h2").forEach((h2) => {
     const r = (h2 as HTMLElement).getBoundingClientRect()
-    posicionesH2Css.push(r.top - rootRect.top)
+    posicionesH2Css.push((r.top - rootRect.top) / factorPreview)
   })
 
   const canvas = await html2canvas(el, {
@@ -91,8 +96,11 @@ async function generarPdfVisual(nombreCompleto: string) {
        evitar que contenido overflowee fuera de la pagina. */
     const pxPorMm = canvas.width / A4_WIDTH_MM
     const altoPaginaPx = A4_HEIGHT_MM * pxPorMm
-    /* Umbral minimo: cortes que dejan la pagina al menos al 70% lleno */
-    const MIN_PAGINA_RATIO = 0.7
+    /* Umbral minimo: cortes que dejan la pagina al menos al 55% llena.
+       Bajo (antes 0.7) porque en Moderno/Colorido las secciones pueden
+       ser mas grandes que 30% de pagina y queremos poder empujarlas enteras
+       a la siguiente sin amputarlas. */
+    const MIN_PAGINA_RATIO = 0.55
 
     /* Convertir posiciones h2 de CSS px a canvas px.
        Los positions fueron medidos en el DOM original antes del capture;
@@ -164,16 +172,21 @@ async function generarPdfVisual(nombreCompleto: string) {
   pdf.save(`${nombre}_CV.pdf`)
 }
 
-/* Cuenta pixeles cercanos al blanco por fila del canvas.
-   Una fila con muchos pixeles blancos es un buen candidato a corte
-   porque significa que hay espacio entre elementos (gap entre secciones). */
+/* Cuenta pixeles cercanos al blanco por fila del canvas, pero SOLO en la
+   region del body (columnas derechas). En Moderno el sidebar izquierdo
+   es siempre color solido → toda fila tiene ~33% de columnas no-blancas
+   incluso en los gaps entre lineas de texto, lo que borraba el contraste
+   entre gap y texto. Al mirar solo el body detectamos gaps reales. */
 function calcularBlancosPorFila(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
 ): Uint32Array {
   const { width, height } = canvas
   const scores = new Uint32Array(height)
-  /* Leemos en chunks para no crashear con canvases gigantes */
+  /* Arrancar al 35% para saltar el sidebar de Moderno.
+     En plantillas sin sidebar (Colorido) igual funciona: solo mira
+     la parte central/derecha del body, donde esta el grueso del texto. */
+  const colInicio = Math.floor(width * 0.35)
   const CHUNK_FILAS = 512
   for (let yInicio = 0; yInicio < height; yInicio += CHUNK_FILAS) {
     const altoChunk = Math.min(CHUNK_FILAS, height - yInicio)
@@ -182,7 +195,7 @@ function calcularBlancosPorFila(
     for (let fila = 0; fila < altoChunk; fila++) {
       let blancos = 0
       const offsetFila = fila * width * 4
-      for (let col = 0; col < width; col++) {
+      for (let col = colInicio; col < width; col++) {
         const i = offsetFila + col * 4
         if (data[i]! >= 240 && data[i + 1]! >= 240 && data[i + 2]! >= 240) {
           blancos++
