@@ -68,8 +68,9 @@ export function generarPdfAts(
   y += 7
 
   if (dp.titulo) {
+    pdf.setFont(fuenteBase, "normal")
     pdf.setFontSize(11)
-    setMuted()
+    setColor(82, 82, 91)
     pdf.text(dp.titulo, PAGE_WIDTH / 2, y, { align: "center" })
     y += 5
   }
@@ -120,7 +121,9 @@ export function generarPdfAts(
         pdf.setFont(fuenteBase, "bold")
         pdf.setFontSize(10)
         setBlack()
-        pdf.text(exp.cargo || e.cargo, MARGIN, y)
+        const cargo = exp.cargo || e.cargo
+        const tituloLinea = exp.empresa ? `${cargo}, ${exp.empresa}` : cargo
+        pdf.text(tituloLinea, MARGIN, y)
 
         const fecha = formatearRangoFechas(exp.fechaInicio, exp.fechaFin)
         if (fecha) {
@@ -131,12 +134,11 @@ export function generarPdfAts(
         }
         y += 4
 
-        const subtitulo = [exp.empresa, exp.ubicacion].filter(Boolean).join(" · ")
-        if (subtitulo) {
+        if (exp.ubicacion) {
           pdf.setFont(fuenteBase, "oblique")
           pdf.setFontSize(9)
           setMuted()
-          pdf.text(subtitulo, MARGIN, y)
+          pdf.text(exp.ubicacion, MARGIN, y)
           y += 4
         }
 
@@ -150,9 +152,9 @@ export function generarPdfAts(
         }
 
         if (exp.logros) {
-          pdf.setFont(fuenteBase, "bold")
+          pdf.setFont(fuenteBase, "oblique")
           pdf.setFontSize(9)
-          setAccent()
+          setColor(63, 63, 70)
           const lines = pdf.splitTextToSize(`${e.logros}: ${exp.logros}`, CONTENT_WIDTH)
           escribirLineas(lines, 3.5)
           y += 1
@@ -170,7 +172,9 @@ export function generarPdfAts(
         pdf.setFont(fuenteBase, "bold")
         pdf.setFontSize(10)
         setBlack()
-        pdf.text(edu.titulo || e.titulo, MARGIN, y)
+        const titulo = edu.titulo || e.titulo
+        const tituloLinea = edu.institucion ? `${titulo}, ${edu.institucion}` : titulo
+        pdf.text(tituloLinea, MARGIN, y)
 
         const fecha = formatearFechaEducacion(edu.fechaInicio, edu.fechaFin)
         if (fecha) {
@@ -180,14 +184,6 @@ export function generarPdfAts(
           pdf.text(fecha, PAGE_WIDTH - MARGIN, y, { align: "right" })
         }
         y += 4
-
-        if (edu.institucion) {
-          pdf.setFont(fuenteBase, "oblique")
-          pdf.setFontSize(9)
-          setMuted()
-          pdf.text(edu.institucion, MARGIN, y)
-          y += 4
-        }
 
         if (edu.descripcion) {
           pdf.setFont(fuenteBase, "normal")
@@ -207,10 +203,19 @@ export function generarPdfAts(
       for (const curso of datos.cursos) {
         checkPage(10)
 
+        const nombre = curso.nombre || e.curso
         pdf.setFont(fuenteBase, "bold")
         pdf.setFontSize(10)
         setBlack()
-        pdf.text(curso.nombre || e.curso, MARGIN, y)
+        pdf.text(nombre, MARGIN, y)
+
+        if (curso.institucion) {
+          /* "nombre, institucion" — institucion en peso normal, en linea con el nombre */
+          const offsetX = MARGIN + pdf.getTextWidth(nombre)
+          pdf.setFont(fuenteBase, "normal")
+          setColor(82, 82, 91)
+          pdf.text(`, ${curso.institucion}`, offsetX, y)
+        }
 
         if (curso.fecha) {
           pdf.setFont(fuenteBase, "normal")
@@ -220,16 +225,8 @@ export function generarPdfAts(
         }
         y += 4
 
-        if (curso.institucion) {
-          pdf.setFont(fuenteBase, "oblique")
-          pdf.setFontSize(9)
-          setMuted()
-          pdf.text(curso.institucion, MARGIN, y)
-          y += 4
-        }
-
         if (curso.url) {
-          pdf.setFont(fuenteBase, "normal")
+          pdf.setFont(fuenteBase, "oblique")
           pdf.setFontSize(9)
           setMuted()
           pdf.text(curso.url, MARGIN, y)
@@ -282,23 +279,42 @@ export function generarPdfAts(
     habilidades: () => {
       if (datos.habilidades.length === 0) return
       y = renderSeccion(pdf, e.competencias.toUpperCase(), y, color, fuenteBase)
+      /* Chips con borde redondeado para imitar el preview.
+         Medimos cada texto, dibujamos un rect con padding y wrappeamos
+         a la siguiente fila si no cabe. */
       pdf.setFont(fuenteBase, "normal")
-      pdf.setFontSize(10)
-      setColor(82, 82, 91)
-      const texto = datos.habilidades.join("  ·  ")
-      const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
-      escribirLineas(lines, 4)
-      y += 4
+      pdf.setFontSize(9)
+      const padX = 2.2
+      const padY = 1.2
+      const altoChip = 4.6
+      const gapX = 1.8
+      const gapY = 1.6
+      let x = MARGIN
+      for (const h of datos.habilidades) {
+        const ancho = pdf.getTextWidth(h) + padX * 2
+        if (x + ancho > PAGE_WIDTH - MARGIN) {
+          x = MARGIN
+          y += altoChip + gapY
+          checkPage(altoChip)
+        }
+        pdf.setDrawColor(212, 212, 216)
+        pdf.setLineWidth(0.2)
+        pdf.roundedRect(x, y - altoChip + padY + 0.4, ancho, altoChip, 1.2, 1.2)
+        setColor(63, 63, 70)
+        pdf.text(h, x + padX, y)
+        x += ancho + gapX
+      }
+      y += altoChip + 1
     },
     idiomas: () => {
       if (datos.idiomas.length === 0) return
       y = renderSeccion(pdf, e.idiomas.toUpperCase(), y, color, fuenteBase)
       pdf.setFont(fuenteBase, "normal")
       pdf.setFontSize(10)
-      setColor(82, 82, 91)
+      setColor(63, 63, 70)
       const texto = datos.idiomas
         .map((i) => `${i.nombre || e.idioma} (${i.nivel})`)
-        .join("  ·  ")
+        .join("     ")
       const lines = pdf.splitTextToSize(texto, CONTENT_WIDTH)
       escribirLineas(lines, 4)
       y += 4
