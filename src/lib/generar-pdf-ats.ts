@@ -135,7 +135,7 @@ export function generarPdfAts(
         y += 4
 
         if (exp.ubicacion) {
-          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFont(fuenteBase, "italic")
           pdf.setFontSize(9)
           setMuted()
           pdf.text(exp.ubicacion, MARGIN, y)
@@ -152,7 +152,7 @@ export function generarPdfAts(
         }
 
         if (exp.logros) {
-          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFont(fuenteBase, "italic")
           pdf.setFontSize(9)
           setColor(63, 63, 70)
           const lines = pdf.splitTextToSize(`${e.logros}: ${exp.logros}`, CONTENT_WIDTH)
@@ -226,7 +226,7 @@ export function generarPdfAts(
         y += 4
 
         if (curso.url) {
-          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFont(fuenteBase, "italic")
           pdf.setFontSize(9)
           setMuted()
           pdf.text(curso.url, MARGIN, y)
@@ -249,7 +249,7 @@ export function generarPdfAts(
         pdf.text(p.nombre || e.proyecto, MARGIN, y)
 
         if (p.url) {
-          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFont(fuenteBase, "italic")
           pdf.setFontSize(9)
           setMuted()
           pdf.text(p.url, PAGE_WIDTH - MARGIN, y, { align: "right" })
@@ -257,7 +257,7 @@ export function generarPdfAts(
         y += 4
 
         if (p.tecnologias) {
-          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFont(fuenteBase, "italic")
           pdf.setFontSize(9)
           setMuted()
           pdf.text(p.tecnologias, MARGIN, y)
@@ -341,7 +341,7 @@ export function generarPdfAts(
         }
 
         if (ref.relacion) {
-          pdf.setFont(fuenteBase, "oblique")
+          pdf.setFont(fuenteBase, "italic")
           pdf.setFontSize(9)
           setMuted()
           pdf.text(ref.relacion, MARGIN, y)

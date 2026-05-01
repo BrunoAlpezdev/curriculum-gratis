@@ -17,6 +17,7 @@ import { Button } from "@/components/atoms/Button"
 import { useCurriculumStore } from "@/lib/store"
 import { useTema, type Tema } from "@/lib/useTema"
 import { exportarJson, importarJson } from "@/lib/importar-exportar"
+import { DialogEjemploCv } from "@/editor/DialogEjemploCv"
 import type { DatosCurriculum } from "@/types"
 import type { Modo } from "@/editor/Editor"
 
@@ -239,87 +240,6 @@ function generarDatosMock(): DatosCurriculum {
   }
 }
 
-const DATOS_EJEMPLO: DatosCurriculum = {
-  datosPersonales: {
-    nombreCompleto: "Bruno Alexis Perez Valenzuela",
-    titulo: "Ingeniero en Informatica",
-    email: "brunoalpezdev@gmail.com",
-    telefono: "+56 9 1234 5678",
-    ubicacion: "Chile",
-    linkedin: "linkedin.com/in/brunoalpezdev",
-    github: "github.com/BrunoAlpezdev",
-    sitioWeb: "",
-    foto: "",
-  },
-  perfil:
-    "Ingeniero en Informatica con experiencia en automatizacion, analisis de datos y reestructuracion de procesos complejos. Especializado en Tecnologias Web y Python para automatizaciones, optimizacion de procesos y generacion de herramientas internas orientadas a operaciones y toma de decisiones. Experiencia previa en liderazgo tecnico y modernizacion de sistemas internos.",
-  experiencia: [
-    {
-      id: crypto.randomUUID(),
-      empresa: "Freightsimple",
-      cargo: "Fullstack Engineer",
-      ubicacion: "Canada (Remoto)",
-      fechaInicio: "2025-10",
-      fechaFin: null,
-      descripcion:
-        "Lidere como Lead Engineer dos proyectos estrategicos en paralelo: migracion de herramienta interna core y establecimiento de estandares de calidad de codigo, asegurando continuidad operativa y mejoras arquitectonicas sin degradar performance. Defini decisiones arquitectonicas clave para reducir deuda tecnica y desarrolle nuevas features para la herramienta interna. Gestione iteraciones del equipo bajo flujo Kanban en Linear.",
-      logros: "",
-    },
-    {
-      id: crypto.randomUUID(),
-      empresa: "TechLex Matthei",
-      cargo: "Analista de Base de Datos y Desarrollador",
-      ubicacion: "Chile",
-      fechaInicio: "2025-03",
-      fechaFin: "2025-10",
-      descripcion:
-        "Automatizacion de procesos internos con Python, reduciendo tareas manuales de mas de 8 horas a menos de 10 minutos. Desarrollo de herramientas internas para procesamiento y validacion de datos sensibles. Monitoreo de desempeño y analisis de consistencia de datos operativos. Optimizacion de consultas PostgreSQL para reducir carga en infraestructura cloud.",
-      logros: "",
-    },
-  ],
-  educacion: [
-    {
-      id: crypto.randomUUID(),
-      institucion: "IP Duoc UC",
-      titulo: "Ingenieria en Informatica",
-      fechaInicio: "2021-03",
-      fechaFin: "2024-12",
-      descripcion: "",
-    },
-  ],
-  cursos: [],
-  proyectos: [
-    {
-      id: crypto.randomUUID(),
-      nombre: "Curriculum Gratis",
-      descripcion: "Generador de CV open source en Next.js con exportacion a PDF optimizado para ATS. Totalmente gratuito y sin backend.",
-      url: "github.com/BrunoAlpezdev/curriculum-gratis",
-      tecnologias: "Next.js, React, TypeScript, Tailwind CSS, Zustand",
-    },
-  ],
-  habilidades: [
-    "Python",
-    "React",
-    "Next.js",
-    "Flask",
-    "Django",
-    "PostgreSQL",
-    "MySQL",
-    "SQL",
-    "Excel",
-    "Automatizacion ETL",
-    "Pentaho",
-    "Kotlin",
-  ],
-  idiomas: [
-    { id: crypto.randomUUID(), nombre: "Español", nivel: "nativo" },
-    { id: crypto.randomUUID(), nombre: "Ingles", nivel: "avanzado" },
-  ],
-  referencias: [],
-  disponibilidad: "",
-  pretensionesRenta: "",
-}
-
 const TAPS_REQUERIDOS = 5
 const VENTANA_MS = 2000
 
@@ -330,6 +250,7 @@ interface BarraAccionesProps {
 export function BarraAcciones({ modo }: BarraAccionesProps) {
   const [descargando, setDescargando] = useState(false)
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const [ejemploAbierto, setEjemploAbierto] = useState(false)
   const datos = useCurriculumStore((s) => s.datos)
   const carta = useCurriculumStore((s) => s.carta)
   const personalizacion = useCurriculumStore((s) => s.personalizacion)
@@ -392,10 +313,6 @@ export function BarraAcciones({ modo }: BarraAccionesProps) {
     }
   }
 
-  function cargarEjemplo() {
-    useCurriculumStore.setState({ datos: DATOS_EJEMPLO })
-  }
-
   function reiniciar() {
     if (window.confirm("¿Seguro que quieres reiniciar? Se borrarán todos los datos del curriculum.")) {
       reiniciarStore()
@@ -432,11 +349,11 @@ export function BarraAcciones({ modo }: BarraAccionesProps) {
         <span className="hidden md:inline text-xs text-zinc-400 dark:text-zinc-500 shrink-0">100% gratuito</span>
       </div>
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
-        <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={cargarEjemplo}>
+        <Button variant="ghost" size="sm" className="hidden md:inline-flex" onClick={() => setEjemploAbierto(true)}>
           <EyeIcon size={16} />
           Ver ejemplo
         </Button>
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={cargarEjemplo} title="Ver ejemplo">
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setEjemploAbierto(true)} title="Ver ejemplo">
           <EyeIcon size={16} />
         </Button>
         <Button
@@ -510,6 +427,7 @@ export function BarraAcciones({ modo }: BarraAccionesProps) {
           {descargando ? "Descargando..." : "Descargar PDF"}
         </Button>
       </div>
+      <DialogEjemploCv abierto={ejemploAbierto} onCerrar={() => setEjemploAbierto(false)} />
     </div>
   )
 }
